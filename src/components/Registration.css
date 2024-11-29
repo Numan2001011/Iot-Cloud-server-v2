@@ -1,0 +1,58 @@
+.custom-bg {
+  background: linear-gradient(to bottom right, #0097c5, #020040);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* background: 'linear-gradient(to right, #f06, #f79)',  */
+}
+.left-div {
+  background: linear-gradient(to right, #f5fdfe, #ffffff);
+}
+/* Add this to your custom CSS file */
+.custom-hover-input {
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-hover-input:hover {
+  border-color: #007bff; /* Change to desired hover color */
+  box-shadow: 0px 0px 8px rgba(0, 123, 255, 0.5); /* Glow effect */
+}
+
+.custom-hover-input:focus {
+  border-color: #0056b3; /* Focus color */
+  box-shadow: 0px 0px 10px rgba(0, 86, 179, 0.8); /* Stronger glow on focus */
+}
+.reg-btn {
+  /* width: 45%; */
+  font-size: 1rem;
+}
+.reg-btn:hover {
+  background-color: #0056b3; /* Darker blue for hover */
+  border-color: #0056b3;
+  transform: scale(1.05); /* Slight zoom effect */
+  box-shadow: 0px 0px 12px rgba(0, 86, 179, 0.6); /* Glow effect */
+}
+.reg-btn-2 {
+  background-image: linear-gradient(144deg, #004d79, #00325e 50%, #009eaa);
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1em;
+  max-width: 100%;
+  min-width: 140px;
+  padding: 10px;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.reg-btn-2:hover {
+  background-color: #0056b3; /* Darker blue for hover */
+  border-color: #0056b3;
+  transform: scale(1.05); /* Slight zoom effect */
+  box-shadow: 0px 0px 12px rgba(0, 86, 179, 0.6); /* Glow effect */
+}
