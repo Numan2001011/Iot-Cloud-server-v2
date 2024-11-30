@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
-import mysql from "mysql";
-// import nodemailer from "nodemailer";
+import db from "./database.js";
+import transporter from "./Transporter.js";
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -9,23 +9,6 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Configure nodemailer to send emails
-// const transporter = nodemailer.createTransport({
-//   host: "smtp.gmail.com",
-//   port: 587,
-//   secure: false, // Use `true` for port 465, `false` for all other ports
-//   auth: {
-//     user: "rjnoman003@gmail.com",
-//     pass: "uxcexizxtlukhtin",
-//   },
-// });
-
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "iot_cloud_server",
-});
 db.connect();
 
 app.post("/signup/registerusers", async (req, res) => {
@@ -63,7 +46,9 @@ app.post("/signup/registerusers", async (req, res) => {
         // User is not active
         return res
           .status(302)
-          .send("Email already exists but not active. Verify your email using OTP.");
+          .send(
+            "Email already exists but not active. Verify your email using OTP."
+          );
       } else {
         // User is active
         return res
