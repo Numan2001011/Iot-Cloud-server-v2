@@ -1,0 +1,37 @@
+.profile-section {
+  background-color: #f8f9fa; /* Light background for profile info */
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  margin-left: 10px;
+  box-shadow: 0 0px 20px rgba(0, 0, 0, 0.2);
+}
+
+.project-section {
+  background-color: #e9ecef; /* Slightly darker background for projects */
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.create-project-button {
+  background-color: #007bff; /* Primary button color */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.create-project-button:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+}
+/* Media Queries for Responsiveness */
+@media (max-width: 768px) {
+  .profile-section,
+  .project-section {
+    padding: 15px; /* Reduce padding on smaller screens */
+    margin-left: 0;
+  }
+}
