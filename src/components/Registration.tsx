@@ -27,9 +27,9 @@ const regSchema = z
       )
       .refine((value) => stringValidationRules.refine(value)),
 
-    num_of_sensors: z
-      .number({ invalid_type_error: "Only digits are accepted" })
-      .int(),
+    // num_of_sensors: z
+    //   .number({ invalid_type_error: "Only digits are accepted" })
+    //   .int(),
 
     username: z
       .string()
@@ -68,8 +68,8 @@ const Registration = () => {
   //   formState: { errors: otpErrors, isValid: isOtpValid },
   // } = useForm<otpData>({ resolver: zodResolver(otpSchema), mode: "onChange" });
 
-  const [errorMessage, setErrorMessage] = useState('');
- 
+  const [errorMessage, setErrorMessage] = useState("");
+
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConPassword, setConShowPassword] = useState<boolean>(false);
   const togglePasswordVisibility = () => {
@@ -223,7 +223,7 @@ const Registration = () => {
                     )}
                   </div>
 
-                  <div className="mb-2">
+                  {/* <div className="mb-2">
                     <label htmlFor="sensor_no" className="form-label">
                       Number of Sensors
                     </label>
@@ -244,7 +244,7 @@ const Registration = () => {
                         {errors.num_of_sensors.message}
                       </small>
                     )}
-                  </div>
+                  </div> */}
 
                   <div className="mb-2">
                     <label htmlFor="username" className="form-label">

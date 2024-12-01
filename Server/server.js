@@ -28,9 +28,7 @@ app.post("/loginuser", async (req, res) => {
 
     if (userResult.length === 0) {
       // User does not exist
-      return res
-        .status(404)
-        .json({ message: "User not found. Please register." });
+      return res.status(404).json({ message: "Invalid credentials." });
     }
 
     const user = userResult[0];
@@ -44,7 +42,7 @@ app.post("/loginuser", async (req, res) => {
     // Here, you should compare the stored hashed password with the provided password
     // For demonstration, let's assume the password is stored in plain text (not recommended)
     if (user.password !== password) {
-      return res.status(401).json({ message: "Incorrect password." });
+      return res.status(401).json({ message: "Invalid credentials." });
     }
 
     // Successful login
@@ -162,6 +160,28 @@ app.post("/signup/registerusers", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send("Error registering user.");
+  }
+});
+
+app.post("/createproject", async (req, res) => {
+  console.log("Req body:", req.body);
+  const { projectname, num_of_sensors, sensor_names } = req.body;
+
+  const username = "noman011";
+  const createUrl =
+    "INSERT into project_table(username, projectname, num_of_sensors, sensor_names) VALUES(?,?,?,?)";
+  const projectValues = [username, projectname, num_of_sensors, sensor_names];
+  try {
+    const projectResult = await new Promise((resolve, reject) => {
+      db.query(createUrl, projectValues, (error, data) => {
+        if (error) reject(error);
+        else resolve(data);
+      });
+    });
+    res.status(201).json({ message: "Project created successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error creating project.");
   }
 });
 

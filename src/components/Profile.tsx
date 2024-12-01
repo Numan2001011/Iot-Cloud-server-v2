@@ -4,6 +4,7 @@ import "./Profile.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Modal, Button, Form } from "react-bootstrap";
 import { z } from "zod";
+import axios from "axios";
 
 interface Userinfo {
   name: string;
@@ -30,6 +31,7 @@ const Profile = () => {
   const [projectName, setProjectName] = useState("");
   const [numSensors, setNumSensors] = useState(0);
   const [sensorNames, setSensorNames] = useState<string[]>([]);
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const handleShow = () => setShowModal(true);
@@ -57,7 +59,37 @@ const Profile = () => {
     setErrors({});
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const formData = {
+    projectname: projectName,
+    num_of_sensors: numSensors,
+    sensor_names: sensorNames.toString(),
+  };
+
+  const submitProject = async () => {
+    try {
+      console.log("project data: ", formData);
+      // Send POST request
+      const response = await axios.post(
+        "http://localhost:5000/createproject",
+        formData
+      );
+
+      if (response.status === 201) {
+        alert(response.data.message || "Project created successfully.");
+      } else {
+        alert("Unexpected response from the server.");
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error("Server error response:", error.response);
+        alert(error.response.data || "Failed to create project.");
+      } else {
+        console.error("Network or unknown error:", error);
+        alert("Unable to connect to the server.");
+      }
+    }
+  };
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate the form data
@@ -76,11 +108,13 @@ const Profile = () => {
       return;
     }
 
-    // Handle form submission logic here
-    console.log("Project Name:", projectName);
-    console.log("Number of Sensors:", numSensors);
-    console.log("Sensor Names:", sensorNames);
-    handleClose(); // Close modal after submission
+    console.log("Sensors:", sensorNames);
+    try {
+      await submitProject(); // Call the API
+      handleClose(); // Close modal after successful submission
+    } catch (error) {
+      console.error("Error submitting project:", error);
+    }
   };
 
   return (
@@ -144,6 +178,7 @@ const Profile = () => {
                 isInvalid={!!errors.numSensors}
                 required
               />
+
               <Form.Control.Feedback type="invalid">
                 {errors.numSensors}
               </Form.Control.Feedback>

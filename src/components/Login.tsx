@@ -153,6 +153,7 @@ const Login = () => {
                     <button
                       type="submit"
                       className="btn btn-success reg-btn m-0"
+                      disabled={!isValid}
                     >
                       LOG IN
                     </button>
