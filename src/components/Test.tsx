@@ -1,143 +1,177 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import iotlogo from "../../images/iotlogo.png";
-import { BiHide, BiShow } from "react-icons/bi";
 import { useState } from "react";
-import "./Login.css";
+import profileixon from "../../images/profileicon.png";
+import "./Profile.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import { Modal, Button, Form } from "react-bootstrap";
+import { z } from "zod";
 
-// Define the schema for validation
-const loginSchema = z.object({
-  username: z
-    .string()
-    .min(5, { message: "Username must be at least 5 characters" }),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters.")
-    .max(20, "Password cannot exceed 20 characters."),
+interface Userinfo {
+  name: string;
+  username: string;
+}
+
+const sensorSchema = z
+  .string()
+  .min(1, "Sensor name is required")
+  .regex(/[a-zA-Z]/, "Use a valid sensor name.");
+
+const schema = z.object({
+  projectName: z.string().min(1, "Project name is required"),
+  numSensors: z.number().min(1, "At least one sensor is required"),
+  sensorNames: z
+    .array(sensorSchema)
+    .min(1, "At least one sensor name is required"),
 });
 
-type loginData = z.infer<typeof loginSchema>;
+const Profile = () => {
+  const [userinfo, setuserinfo] = useState<Userinfo | null>(null);
 
-const Login = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<loginData>({ resolver: zodResolver(loginSchema), mode: "onChange" });
 
-  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showModal, setShowModal] = useState(false);
+  const [projectName, setProjectName] = useState("");
+  const [numSensors, setNumSensors] = useState(0);
+  const [sensorNames, setSensorNames] = useState<string[]>([]);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // Toggle password visibility
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+  const handleShow = () => setShowModal(true);
+  const handleClose = () => {
+    setShowModal(false);
+    resetForm();
   };
 
-  // Handle form submission
-  const onLoginSubmit = (data: loginData) => {
-    console.log("Form submitted successfully:", data);
-    // alert("Form submitted successfully!");
+  const handleNumSensorsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    setNumSensors(value);
+    setSensorNames(Array(value).fill("")); // Reset sensor names based on new number
   };
 
-  //   console.log("Validation Errors: ", errors);
-  //   console.log("Is Form Valid? ", isValid);
+  const handleSensorNameChange = (index: number, value: string) => {
+    const updatedSensorNames = [...sensorNames];
+    updatedSensorNames[index] = value;
+    setSensorNames(updatedSensorNames);
+  };
+
+  const resetForm = () => {
+    setProjectName("");
+    setNumSensors(0);
+    setSensorNames([]);
+    setErrors({});
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validate the form data
+    const result = schema.safeParse({
+      projectName,
+      numSensors,
+      sensorNames,
+    });
+
+    if (!result.success) {
+      const validationErrors: { [key: string]: string } = {};
+      result.error.errors.forEach((err) => {
+        validationErrors[err.path[0]] = err.message;
+      });
+      setErrors(validationErrors);
+      return;
+    }
+
+    // Handle form submission logic here
+    console.log("Project Name:", projectName);
+    console.log("Number of Sensors:", numSensors);
+    console.log("Sensor Names:", sensorNames);
+    handleClose(); // Close modal after submission
+  };
 
   return (
     <>
-      <section className="custom-bg">
-        <div className="container">
-          <div
-            className="row d-flex mx-auto flex-row justify-content-center align-items-center card p-2 shadow border-0 rounded-3"
-            style={{ maxWidth: "900px" }}
-          >
-            {/* Left Side: Content */}
-            <div className="col-md-6 col-sm-6 shadow right-div">
-              <div className="card-body">
-                <h3 className="h2 text-center text-nowrap mb-4">LOG IN</h3>
-                <form onSubmit={handleSubmit(onLoginSubmit)}>
-                  <div className="mb-2">
-                    <label htmlFor="username" className="form-label">
-                      Username
-                    </label>
-                    <input
-                      type="text"
-                      id="username"
-                      {...register("username")}
-                      className={
-                        errors.username
-                          ? "form-control custom-hover-input form-control-md border border-danger"
-                          : "form-control custom-hover-input form-control-md border border-info"
-                      }
-                      placeholder="Enter your username"
-                    />
-                    {errors.username && (
-                      <small className="invalid-feedback">
-                        {errors.username.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="mb-2">
-                    <label htmlFor="pwd" className="form-label">
-                      Password
-                    </label>
-                    <div className="input-group">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        className={
-                          errors.password
-                            ? "form-control custom-hover-input form-control-md border border-danger"
-                            : "form-control custom-hover-input form-control-md border border-info"
-                        }
-                        id="pwd"
-                        {...register("password")}
-                        placeholder="Enter your password"
-                      />
-                      <button
-                        className="btn btn-outline-secondary"
-                        type="button"
-                        onClick={togglePasswordVisibility}
-                      >
-                        {showPassword ? <BiHide /> : <BiShow />}
-                      </button>
-                    </div>
-                    {errors.password && (
-                      <small className="invalid-feedback">
-                        {errors.password.message}
-                      </small>
-                    )}
-                  </div>
-
-                  <div className="d-flex flex-column justify-content-center align-items-center">
-                    <button
-                      type="submit"
-                      className="btn btn-success reg-btn m-0"
-                    >
-                      LOG IN
-                    </button>
-                  </div>
-                </form>
-              </div>
+      <section className="d-flex justify-content-center align-items-center mx-auto p-5">
+        <div className="row col-12">
+          <div className="col-md-3 col-12 card profile-section mb-5 d-flex align-items-center">
+            <h4 className="h4">Profile Info</h4>
+            <img
+              src={profileixon}
+              alt="Profile Icon"
+              height="100px"
+              width="100px"
+            />
+            <p>Name: {userinfo?.name || "Md. Numanur Rahman"}</p>
+            <p>Username: {userinfo?.username || "noman011"}</p>
+          </div>
+          <div className="col-md-9 col-12 project-section">
+            <div className="d-flex justify-content-between align-items-center">
+              <h4 className="h4">Your Projects</h4>
+              <button className="create-project-button" onClick={handleShow}>
+                Create New Project
+              </button>
             </div>
-
-            {/* Right Side: Image */}
-            <div className="col-md-6 col-sm-6">
-              <h2 className="h2 text-center mb-4">
-                Welcome to <br />
-                <span className="text-primary">IoT Cloud Server</span>
-              </h2>
-
-              <img
-                src={iotlogo}
-                alt="IoT Cloud Server Image"
-                className="img-fluid rounded-3 shadow"
-              />
+            <div className="text-center mt-5">
+              <p>No Project available.</p>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Modal for Creating New Project */}
+      <Modal show={showModal} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Create New Project</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form onSubmit={handleSubmit}>
+            <Form.Group controlId="projectName">
+              <Form.Label>Project Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                isInvalid={!!errors.projectName}
+                required
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.projectName}
+              </Form.Control.Feedback>
+            </Form.Group>
+            <Form.Group controlId="numSensors">
+              <Form.Label>Number of Sensors</Form.Label>
+              <Form.Control
+                type="number"
+                value={numSensors}
+                onChange={handleNumSensorsChange}
+                min={1}
+                isInvalid={!!errors.numSensors}
+                required
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.numSensors}
+              </Form.Control.Feedback>
+            </Form.Group>
+            {Array.from({ length: numSensors }).map((_, index) => (
+              <Form.Group key={index} controlId={`sensorName${index}`}>
+                <Form.Label>Sensor Name {index + 1}</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={sensorNames[index]}
+                  onChange={(e) =>
+                    handleSensorNameChange(index, e.target.value)
+                  }
+                  isInvalid={!!errors.sensorNames}
+                  required
+                />
+                <Form.Control.Feedback type="invalid">
+                  {errors.sensorNames}
+                </Form.Control.Feedback>
+              </Form.Group>
+            ))}
+            <Button variant="primary" type="submit">
+              Submit
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
     </>
   );
 };
 
-export default Login;
+export default Profile;

@@ -5,12 +5,12 @@ import iotlogo from "../../images/iotlogo.png";
 import { BiHide, BiShow } from "react-icons/bi";
 import { useState } from "react";
 import "./Login.css";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 // Define the schema for validation
 const loginSchema = z.object({
-  username: z
-    .string()
-    .min(5, { message: "Username must be at least 5 characters" }),
+  email: z.string().email("Must be a valid email address"),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters.")
@@ -24,9 +24,15 @@ const Login = () => {
     register,
     handleSubmit,
     formState: { errors, isValid },
-  } = useForm<loginData>({ resolver: zodResolver(loginSchema), mode: "onChange" });
+  } = useForm<loginData>({
+    resolver: zodResolver(loginSchema),
+    mode: "onChange",
+  });
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [message, setMessage] = useState("");
+
+  const navigate = useNavigate(); // Hook to programmatically navigate
 
   // Toggle password visibility
   const togglePasswordVisibility = () => {
@@ -34,9 +40,40 @@ const Login = () => {
   };
 
   // Handle form submission
-  const onLoginSubmit = (data: loginData) => {
+  const onLoginSubmit = async (data: loginData) => {
     console.log("Form submitted successfully:", data);
-    // alert("Form submitted successfully!");
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/loginuser",
+        data
+      );
+
+      if (response.status === 200) {
+        alert("Login successful.");
+        navigate("/profile");
+      } else if (response.status === 404) {
+        setMessage(response.data.message);
+        alert("User doesn't exist.");
+      } else if (response.status === 401) {
+        setMessage(response.data.message);
+        alert("Incorrect password.");
+      }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error("Error response from server:", error.response);
+        const { status, data } = error.response;
+
+        if (status === 500) {
+          alert("Internal server error. Please try again later.");
+        } else {
+          alert(data || "An unexpected error occurred.");
+        }
+      } else {
+        console.error("Network or unknown error:", error);
+        alert("Unable to connect to the server. Please check your network.");
+      }
+    }
   };
 
   //   console.log("Validation Errors: ", errors);
@@ -56,23 +93,23 @@ const Login = () => {
                 <h3 className="h2 text-center text-nowrap mb-4">LOG IN</h3>
                 <form onSubmit={handleSubmit(onLoginSubmit)}>
                   <div className="mb-2">
-                    <label htmlFor="username" className="form-label">
-                      Username
+                    <label htmlFor="email" className="form-label">
+                      Email
                     </label>
                     <input
                       type="text"
-                      id="username"
-                      {...register("username")}
+                      id="email"
+                      {...register("email")}
                       className={
-                        errors.username
+                        errors.email
                           ? "form-control custom-hover-input form-control-md border border-danger"
                           : "form-control custom-hover-input form-control-md border border-info"
                       }
-                      placeholder="Enter your username"
+                      placeholder="Enter your email"
                     />
-                    {errors.username && (
-                      <small className="invalid-feedback">
-                        {errors.username.message}
+                    {errors.email && (
+                      <small className="text-danger">
+                        {errors.email.message}
                       </small>
                     )}
                   </div>
@@ -94,7 +131,7 @@ const Login = () => {
                         placeholder="Enter your password"
                       />
                       <button
-                        className="btn btn-outline-secondary"
+                        className="btn btn-outline-secondary border border-info"
                         type="button"
                         onClick={togglePasswordVisibility}
                       >
@@ -102,7 +139,7 @@ const Login = () => {
                       </button>
                     </div>
                     {errors.password && (
-                      <small className="invalid-feedback">
+                      <small className="text-danger">
                         {errors.password.message}
                       </small>
                     )}

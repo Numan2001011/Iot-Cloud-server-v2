@@ -300,7 +300,7 @@ const Registration = () => {
                         disabled={signup}
                       />
                       <button
-                        className="btn btn-outline-secondary"
+                        className="btn btn-outline-secondary border border-info"
                         type="button"
                         onClick={togglePasswordVisibility}
                       >
@@ -331,9 +331,9 @@ const Registration = () => {
                         disabled={signup}
                       />
                       <button
-                        className="btn btn-outline-secondary"
+                        className="btn btn-outline-secondary border border-info"
                         type="button"
-                        onClick={togglePasswordVisibility}
+                        onClick={toggleConPasswordVisibility}
                       >
                         {showConPassword ? <BiHide /> : <BiShow />}
                       </button>
