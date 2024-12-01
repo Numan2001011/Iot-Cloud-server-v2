@@ -7,6 +7,7 @@ import { BiHide, BiShow } from "react-icons/bi";
 import { useState } from "react";
 import axios, { AxiosError } from "axios";
 import { DiVim } from "react-icons/di";
+import { useNavigate } from "react-router-dom";
 
 const stringValidationRules = {
   regex: /^[A-Za-z.]+(?: [A-Za-z.]+)*$/,
@@ -67,6 +68,8 @@ const Registration = () => {
   //   formState: { errors: otpErrors, isValid: isOtpValid },
   // } = useForm<otpData>({ resolver: zodResolver(otpSchema), mode: "onChange" });
 
+  const [errorMessage, setErrorMessage] = useState('');
+ 
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConPassword, setConShowPassword] = useState<boolean>(false);
   const togglePasswordVisibility = () => {
@@ -122,6 +125,8 @@ const Registration = () => {
   //   }
   // };
 
+  const navigate = useNavigate();
+
   const onRegSubmit = async (data: regData) => {
     console.log("Data from frontend:", data);
 
@@ -133,13 +138,18 @@ const Registration = () => {
 
       if (response.status === 201) {
         alert("Registration successful! Please log in.");
+        navigate("/login");
       } else if (response.status === 302) {
         alert(
           "Email already exists but not active. Redirecting to OTP verification."
         );
+        setErrorMessage(response.data.message);
+
         setSignup(true); // Redirect to OTP page
       } else if (response.status === 409) {
-        alert(response.data); // Display backend's message
+        setErrorMessage(response.data.message);
+
+        alert(response.data.message); // Display backend's message
       }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
@@ -319,7 +329,7 @@ const Registration = () => {
                     </label>
                     <div className="input-group">
                       <input
-                        type={showPassword ? "text" : "password"}
+                        type={showConPassword ? "text" : "password"}
                         className={
                           errors.password
                             ? "form-control custom-hover-input form-control-md border border-danger"

@@ -39,7 +39,7 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
-  // Handle form submission
+  //Axios only takes 2xx codes in the try block, else codes are handled inside catch.
   const onLoginSubmit = async (data: loginData) => {
     console.log("Form submitted successfully:", data);
 
@@ -48,28 +48,29 @@ const Login = () => {
         "http://localhost:5000/loginuser",
         data
       );
+      // console.log("Response data: ", response.data);
 
-      if (response.status === 200) {
-        alert("Login successful.");
-        navigate("/profile");
-      } else if (response.status === 404) {
-        setMessage(response.data.message);
-        alert("User doesn't exist.");
-      } else if (response.status === 401) {
-        setMessage(response.data.message);
-        alert("Incorrect password.");
-      }
+      // Handle successful login
+      alert("Login successful.");
+      navigate("/profile");
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
-        console.error("Error response from server:", error.response);
+        // Extract response details
         const { status, data } = error.response;
 
-        if (status === 500) {
-          alert("Internal server error. Please try again later.");
+        console.error("Error response from server:", error.response);
+
+        if (status === 404) {
+          setMessage(data.message || "User not found.");
+        } else if (status === 401) {
+          setMessage(data.message || "Incorrect password.");
+        } else if (status === 500) {
+          alert("500 Internal server error. Please try again later.");
         } else {
-          alert(data || "An unexpected error occurred.");
+          alert(data.message || "An unexpected error occurred.");
         }
       } else {
+        // Network or unknown error
         console.error("Network or unknown error:", error);
         alert("Unable to connect to the server. Please check your network.");
       }
@@ -146,6 +147,9 @@ const Login = () => {
                   </div>
 
                   <div className="d-flex flex-column justify-content-center align-items-center">
+                    {message && (
+                      <p className="text-center text-danger">{message}</p>
+                    )}
                     <button
                       type="submit"
                       className="btn btn-success reg-btn m-0"

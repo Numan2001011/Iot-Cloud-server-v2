@@ -28,7 +28,9 @@ app.post("/loginuser", async (req, res) => {
 
     if (userResult.length === 0) {
       // User does not exist
-      return res.status(404).send("User  not found. Please register.");
+      return res
+        .status(404)
+        .json({ message: "User not found. Please register." });
     }
 
     const user = userResult[0];
@@ -42,7 +44,7 @@ app.post("/loginuser", async (req, res) => {
     // Here, you should compare the stored hashed password with the provided password
     // For demonstration, let's assume the password is stored in plain text (not recommended)
     if (user.password !== password) {
-      return res.status(401).send("Incorrect password.");
+      return res.status(401).json({ message: "Incorrect password." });
     }
 
     // Successful login
@@ -54,7 +56,7 @@ app.post("/loginuser", async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error logging in.");
+    res.status(500).json({ message: "Error logging in." });
   }
 });
 
@@ -107,7 +109,6 @@ app.post("/signup/registerusers", async (req, res) => {
     username,
     name,
     password,
-    num_of_sensors,
     is_active,
     project_count,
   ];
