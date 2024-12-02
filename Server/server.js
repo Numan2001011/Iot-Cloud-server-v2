@@ -185,6 +185,24 @@ app.post("/createproject", async (req, res) => {
   }
 });
 
+//project get method
+app.get("/getprojects", async (req, res) => {
+  const username = "noman011"; // Replace with dynamic authentication logic
+  const fetchProjectsSql = "SELECT * FROM project_table WHERE username = ?";
+  try {
+    const projects = await new Promise((resolve, reject) => {
+      db.query(fetchProjectsSql, [username], (error, results) => {
+        if (error) reject(error);
+        else resolve(results);
+      });
+    });
+    res.status(200).json(projects);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error retrieving projects." });
+  }
+});
+
 app.get("/", (req, res) => {
   return res.json({ msg: "Hello world" });
 });

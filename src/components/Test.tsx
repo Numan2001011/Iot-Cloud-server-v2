@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import profileixon from "../../images/profileicon.png";
 import "./Profile.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Modal, Button, Form } from "react-bootstrap";
 import { z } from "zod";
 import axios from "axios";
+import Project from "./Project";
 
 interface Userinfo {
   name: string;
@@ -76,6 +77,7 @@ const Profile = () => {
 
       if (response.status === 201) {
         alert(response.data.message || "Project created successfully.");
+        await fetchProjects();
       } else {
         alert("Unexpected response from the server.");
       }
@@ -117,6 +119,23 @@ const Profile = () => {
     }
   };
 
+  const [projects, setProjects] = useState<any[]>([]); // State for projects
+
+  // Fetch projects from the server
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/getprojects");
+      setProjects(response.data);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      alert("Failed to fetch projects.");
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects(); // Fetch projects when the component mounts
+  }, []);
+
   return (
     <>
       <section className="d-flex justify-content-center align-items-center mx-auto p-5">
@@ -139,8 +158,19 @@ const Profile = () => {
                 Create New Project
               </button>
             </div>
-            <div className="text-center mt-5">
-              <p>No Project available.</p>
+            <div className="text-center mt-2">
+              {projects.length > 0 ? (
+                projects.map((project, index) => (
+                  <Project
+                    key={index}
+                    projectname={project.projectname}
+                    num_of_sensors={project.num_of_sensors}
+                    sensor_names={project.sensor_names.split(",")}
+                  />
+                ))
+              ) : (
+                <p>No Project available.</p>
+              )}
             </div>
           </div>
         </div>
