@@ -163,6 +163,53 @@ app.post("/signup/registerusers", async (req, res) => {
   }
 });
 
+// app.post("/createproject", async (req, res) => {
+//   console.log("Req body:", req.body);
+//   const { projectname, num_of_sensors, sensor_names } = req.body;
+
+//   const username = "noman011";
+//   const createUrl =
+//     "INSERT into project_table(username, projectname, num_of_sensors, sensor_names) VALUES(?,?,?,?)";
+//   const projectValues = [
+//     username,
+//     projectname,
+//     num_of_sensors,
+//     JSON.stringify(sensor_names),
+//   ];
+
+//   try {
+//     // Insert project information into project_table
+//     const projectResult = await new Promise((resolve, reject) => {
+//       db.query(createUrl, projectValues, (error, data) => {
+//         if (error) reject(error);
+//         else resolve(data);
+//       });
+//     });
+
+//     // Create sensor_table dynamically
+//     const createSensorTableQuery = `
+//       CREATE TABLE IF NOT EXISTS sensor_table_${projectname} (
+//         username VARCHAR(255),
+//         ${sensor_names.map((name) => `${name} VARCHAR(255)`).join(", ")}
+//       )
+//     `;
+
+//     await new Promise((resolve, reject) => {
+//       db.query(createSensorTableQuery, (error, data) => {
+//         if (error) reject(error);
+//         else resolve(data);
+//       });
+//     });
+
+//     res
+//       .status(201)
+//       .json({ message: "Project and sensor table created successfully." });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send("Error creating project or sensor table.");
+//   }
+// });
+
 app.post("/createproject", async (req, res) => {
   console.log("Req body:", req.body);
   const { projectname, num_of_sensors, sensor_names } = req.body;

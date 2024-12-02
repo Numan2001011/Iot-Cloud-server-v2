@@ -164,6 +164,7 @@ const Profile = () => {
                   <Project
                     key={index}
                     projectname={project.projectname}
+                    project_id={project.project_id}
                     num_of_sensors={project.num_of_sensors}
                     sensor_names={project.sensor_names.split(",")}
                   />
