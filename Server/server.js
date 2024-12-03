@@ -212,12 +212,13 @@ app.post("/signup/registerusers", async (req, res) => {
 
 app.post("/createproject", async (req, res) => {
   console.log("Req body:", req.body);
-  const { projectname, num_of_sensors, sensor_names } = req.body;
-
+  // const { projectname, num_of_sensors, sensor_names } = req.body;
+  const project_status = 0;
+  const { project_name } = req.body;
   const username = "noman011";
   const createUrl =
-    "INSERT into project_table(username, projectname, num_of_sensors, sensor_names) VALUES(?,?,?,?)";
-  const projectValues = [username, projectname, num_of_sensors, sensor_names];
+    "INSERT into project_table(username, project_name, project_status) VALUES(?,?,?)";
+  const projectValues = [username, project_name, project_status];
   try {
     const projectResult = await new Promise((resolve, reject) => {
       db.query(createUrl, projectValues, (error, data) => {
@@ -247,6 +248,145 @@ app.get("/getprojects", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Error retrieving projects." });
+  }
+});
+
+// app.get("/showproject/:id", (req, res) => {
+//   const projectId = req.params.id;
+
+//   const query = "SELECT * FROM project_table WHERE project_id = ?";
+//   db.query(query, [projectId], (err, results) => {
+//     if (err) {
+//       console.error("Error fetching project from database:", err.message);
+//       return res.status(500).json({ message: "Internal server error" });
+//     }
+
+//     if (results.length > 0) {
+//       res.status(200).json(results[0]);
+//     } else {
+//       res.status(404).json({ message: "Project not found" });
+//     }
+//   });
+// });
+
+app.get("/showproject/:id", async (req, res) => {
+  const projectId = req.params.id;
+
+  try {
+    const project = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT * FROM project_table WHERE project_id = ?",
+        [projectId],
+        (error, results) => {
+          if (error) reject(error);
+          else resolve(results[0]);
+        }
+      );
+    });
+
+    if (!project) {
+      return res.status(404).json({ message: "Project not found." });
+    }
+
+    const sensors = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT * FROM sensor_table WHERE project_id = ?",
+        [projectId],
+        (error, results) => {
+          if (error) reject(error);
+          else resolve(results);
+        }
+      );
+    });
+
+    res.json({ project, sensors });
+  } catch (error) {
+    console.error("Error fetching project details:", error);
+    res.status(500).json({ message: "Error fetching project details." });
+  }
+});
+
+app.post("/addsensor", async (req, res) => {
+  const { project_id, sensor_name } = req.body;
+
+  if (!project_id || !sensor_name) {
+    return res
+      .status(400)
+      .json({ message: "Project ID and Sensor Name are required." });
+  }
+
+  const randomString = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const sensor_key = `${sensor_name}_${project_id}_${randomString}`;
+
+  const insertSensorQuery =
+    "INSERT INTO sensor_table (project_id, sensor_name, sensor_key) VALUES (?, ?, ?)";
+  const sensorValues = [project_id, sensor_name, sensor_key];
+
+  try {
+    const result = await new Promise((resolve, reject) => {
+      db.query(insertSensorQuery, sensorValues, (error, data) => {
+        if (error) reject(error);
+        else resolve(data);
+      });
+    });
+
+    const sensor = {
+      sensor_id: result.insertId,
+      sensor_name,
+      sensor_key,
+    };
+
+    res.status(201).json({ message: "Sensor added successfully.", sensor });
+  } catch (error) {
+    console.error("Error adding sensor:", error);
+    res.status(500).json({ message: "Error adding sensor." });
+  }
+});
+
+// DELETE request to remove a sensor
+app.delete("/removesensor/:sensor_id", async (req, res) => {
+  const sensor_id = req.params.sensor_id;
+  const deleteSensorQuery = "DELETE FROM sensor_table WHERE sensor_id = ?";
+  const sensorValues = [sensor_id];
+  try {
+    const result = await new Promise((resolve, reject) => {
+      db.query(deleteSensorQuery, sensorValues, (error, data) => {
+        if (error) reject(error);
+        else resolve(data);
+      });
+    });
+    if (result.affectedRows > 0) {
+      res.status(200).send({ message: "Sensor removed successfully" });
+    } else {
+      res.status(404).send({ message: "Sensor not found" });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({ message: "Failed to remove sensor" });
+  }
+});
+
+app.post("/initproject", async (req, res) => {
+  const { project_id } = req.body;
+  console.log("Project Id:", project_id);
+  const changeProjectStatus =
+    "UPDATE project_table SET project_status = 1 WHERE project_id = ?";
+  const projectValues = [project_id];
+  try {
+    const result = await new Promise((resolve, reject) => {
+      db.query(changeProjectStatus, projectValues, (error, data) => {
+        if (error) reject(error);
+        else resolve(data);
+      });
+    });
+    if (result.affectedRows > 0) {
+      res.status(200).send({ message: "Project initialized successfully" });
+    } else {
+      res.status(404).send({ message: "Project not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Failed to initialize project" });
   }
 });
 

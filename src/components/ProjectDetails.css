@@ -1,0 +1,26 @@
+.project-details {
+  background: linear-gradient(to left, #003cab, #00798c);
+  border-radius: 5px;
+  padding: 20px;
+  color: white;
+}
+.sensor-list {
+  list-style: none;
+  background: linear-gradient(to right, #c8ffff, #f0f0f0);
+  padding: 10px;
+  border-radius: 10px;
+}
+.remove-btn {
+  background-color: rgb(187, 0, 0);
+  padding: 10px 20px;
+  color: rgb(255, 255, 255);
+  font-size: 15px;
+}
+.remove-btn:hover{
+    transform: scale(1.2);
+    background-color: rgb(187, 0, 0);
+    padding: 10px 20px;
+    color: rgb(255, 255, 255);
+    font-size: 15px;
+
+}
