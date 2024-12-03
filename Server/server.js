@@ -251,27 +251,8 @@ app.get("/getprojects", async (req, res) => {
   }
 });
 
-// app.get("/showproject/:id", (req, res) => {
-//   const projectId = req.params.id;
-
-//   const query = "SELECT * FROM project_table WHERE project_id = ?";
-//   db.query(query, [projectId], (err, results) => {
-//     if (err) {
-//       console.error("Error fetching project from database:", err.message);
-//       return res.status(500).json({ message: "Internal server error" });
-//     }
-
-//     if (results.length > 0) {
-//       res.status(200).json(results[0]);
-//     } else {
-//       res.status(404).json({ message: "Project not found" });
-//     }
-//   });
-// });
-
 app.get("/showproject/:id", async (req, res) => {
   const projectId = req.params.id;
-
   try {
     const project = await new Promise((resolve, reject) => {
       db.query(
@@ -314,9 +295,10 @@ app.post("/addsensor", async (req, res) => {
       .status(400)
       .json({ message: "Project ID and Sensor Name are required." });
   }
+  const firstWord = sensor_name.split(" ")[0];
 
   const randomString = Math.random().toString(36).substring(2, 6).toUpperCase();
-  const sensor_key = `${sensor_name}_${project_id}_${randomString}`;
+  const sensor_key = `${firstWord}${project_id}${randomString}`;
 
   const insertSensorQuery =
     "INSERT INTO sensor_table (project_id, sensor_name, sensor_key) VALUES (?, ?, ?)";
@@ -366,27 +348,60 @@ app.delete("/removesensor/:sensor_id", async (req, res) => {
   }
 });
 
+const baseUrl = "http://192.168.1.108:5000/"; //change this when changing the network
+
 app.post("/initproject", async (req, res) => {
   const { project_id } = req.body;
+
   console.log("Project Id:", project_id);
   const changeProjectStatus =
     "UPDATE project_table SET project_status = 1 WHERE project_id = ?";
   const projectValues = [project_id];
+
   try {
-    const result = await new Promise((resolve, reject) => {
+    // Update the project status
+    const project_status = await new Promise((resolve, reject) => {
       db.query(changeProjectStatus, projectValues, (error, data) => {
         if (error) reject(error);
         else resolve(data);
       });
     });
-    if (result.affectedRows > 0) {
-      res.status(200).send({ message: "Project initialized successfully" });
+
+    // Retrieve sensor keys
+    const sensorKeyQuery =
+      "SELECT sensor_name, sensor_key FROM sensor_table WHERE project_id = ?";
+    const get_sensor_key = await new Promise((resolve, reject) => {
+      db.query(sensorKeyQuery, projectValues, (error, data) => {
+        if (error) reject(error);
+        else resolve(data);
+      });
+    });
+
+    // Check if the project was updated and sensors were found
+    if (project_status.affectedRows > 0 && get_sensor_key.length > 0) {
+      // Construct the espUrl
+      const espUrl =
+        baseUrl +
+        get_sensor_key
+          .map(
+            (sensor, index) =>
+              `${sensor.sensor_key}=${sensor.sensor_name.replace(
+                /\s+/g,
+                ""
+              )}_value`
+          )
+          .join("&&");
+
+      res.status(200).json({ espUrl });
+      console.log("espurl: ", espUrl);
     } else {
-      res.status(404).send({ message: "Project not found" });
+      res
+        .status(404)
+        .json({ message: "Project not found or no sensors available" });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).send({ message: "Failed to initialize project" });
+    res.status(500).json({ message: "Failed to initialize project" });
   }
 });
 

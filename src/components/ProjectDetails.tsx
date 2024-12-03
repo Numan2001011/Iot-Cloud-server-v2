@@ -28,22 +28,7 @@ const ProjectDetails: React.FC = () => {
   const [sensorName, setSensorName] = useState<string>("");
   const [modalError, setModalError] = useState<string | null>(null);
 
-  // const fetchProject = async () => {
-  //   try {
-  //     const response = await axios.get(
-  //       `http://localhost:5000/showproject/${id}`
-  //     );
-
-  //     console.log("FROM API: ", response.data);
-  //     setProject(response.data);
-  //     console.log(project);
-
-  //     setLoading(false);
-  //   } catch (err) {
-  //     setError("Failed to fetch project details.");
-  //     setLoading(false);
-  //   }
-  // };
+  const [sensor_key, setSensor_key] = useState<string[]>([]);
 
   const fetchProject = async () => {
     try {
@@ -54,7 +39,7 @@ const ProjectDetails: React.FC = () => {
       setSensors(response.data.sensors); // Assuming the API returns project and sensors
       setLoading(false);
       if (response.data.project.project_status == 1) {
-        setButtonInvalid(true);
+        // setButtonInvalid(true);
       } else {
         setButtonInvalid(false);
       }
@@ -127,7 +112,9 @@ const ProjectDetails: React.FC = () => {
           project_id: project?.project_id,
         });
         if (response.status === 200) {
-          setButtonInvalid(true);
+          console.log("init res:", response.data.espUrl);
+          // setSensor_key(response.data);
+          // setButtonInvalid(true);
         }
       } catch (error) {
         console.error("Error initializing project:", error);
@@ -137,6 +124,7 @@ const ProjectDetails: React.FC = () => {
 
   useEffect(() => {
     fetchProject();
+    console.log("res: ", sensor_key);
   }, [id]);
 
   if (loading) {
