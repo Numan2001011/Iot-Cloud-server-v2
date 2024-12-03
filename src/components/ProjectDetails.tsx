@@ -28,15 +28,21 @@ const ProjectDetails: React.FC = () => {
   const [sensorName, setSensorName] = useState<string>("");
   const [modalError, setModalError] = useState<string | null>(null);
 
-  const [sensor_key, setSensor_key] = useState<string[]>([]);
+  const [esp_url, setEsp_url] = useState<string>(
+    "Initialize your project first."
+  );
 
   const fetchProject = async () => {
     try {
       const response = await axios.get(
         `http://localhost:5000/showproject/${id}`
       );
+      if (response.data.projecturl) {
+        setEsp_url(response.data.projecturl);
+      }
       setProject(response.data.project);
       setSensors(response.data.sensors); // Assuming the API returns project and sensors
+
       setLoading(false);
       if (response.data.project.project_status == 1) {
         // setButtonInvalid(true);
@@ -113,7 +119,8 @@ const ProjectDetails: React.FC = () => {
         });
         if (response.status === 200) {
           console.log("init res:", response.data.espUrl);
-          // setSensor_key(response.data);
+          setEsp_url(response.data.espUrl);
+
           // setButtonInvalid(true);
         }
       } catch (error) {
@@ -123,8 +130,9 @@ const ProjectDetails: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchProject();
-    console.log("res: ", sensor_key);
+    if (id) {
+      fetchProject();
+    }
   }, [id]);
 
   if (loading) {
@@ -190,10 +198,34 @@ const ProjectDetails: React.FC = () => {
         )}
       </div>
 
-      <div className="sensor-div d-flex flex-column container">
+      <div className="sensor-div d-flex flex-column container mb-4">
         {!buttonInvalid && (
           <button onClick={handleInitializeProject}>Initialize Project</button>
         )}
+      </div>
+
+      <div className=" border rounded">
+        <h3 className="h3 text-center">Follow the Instructions:</h3>
+        <p>Use this ESP_URL to send data to the IOT Cloud Server.</p>
+        <p>
+          <strong>ESP_URL: </strong>
+          <span className="text-success">
+            <i>{esp_url}</i>
+          </span>
+        </p>
+        <p>To use this, you need to go through some changes:</p>
+        <ul>
+          <li>Copy the whole URL and paste it into your ESP32 code.</li>
+          <li>
+            When sending data, replace the{" "}
+            <strong>Sensor_name_value_field</strong> with actual sensor
+            value(numerical sensor data)
+          </li>
+          <li>
+            Use delay 15 seconds so that the data is properly handled by the
+            cloud server.
+          </li>
+        </ul>
       </div>
 
       {/* Modal for Adding Sensor */}

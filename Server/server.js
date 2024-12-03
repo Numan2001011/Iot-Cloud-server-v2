@@ -280,7 +280,21 @@ app.get("/showproject/:id", async (req, res) => {
       );
     });
 
-    res.json({ project, sensors });
+    const findespurl =
+      "SELECT project_url from esp_url_table where project_id = ?";
+    const esp_url = await new Promise((resolve, reject) => {
+      db.query(findespurl, [projectId], (error, data) => {
+        if (error) reject(error);
+        else resolve(data);
+      });
+    });
+    console.log("espurl: ", esp_url[0].project_url);
+    const projecturl = esp_url[0].project_url;
+    if (projecturl) {
+      res.json({ project, sensors, projecturl });
+    } else {
+      res.json({ project, sensors });
+    }
   } catch (error) {
     console.error("Error fetching project details:", error);
     res.status(500).json({ message: "Error fetching project details." });
@@ -377,9 +391,7 @@ app.post("/initproject", async (req, res) => {
       });
     });
 
-    // Check if the project was updated and sensors were found
     if (project_status.affectedRows > 0 && get_sensor_key.length > 0) {
-      // Construct the espUrl
       const espUrl =
         baseUrl +
         get_sensor_key
@@ -388,11 +400,22 @@ app.post("/initproject", async (req, res) => {
               `${sensor.sensor_key}=${sensor.sensor_name.replace(
                 /\s+/g,
                 ""
-              )}_value`
+              )}_value_field`
           )
           .join("&&");
 
       res.status(200).json({ espUrl });
+
+      const saveurl =
+        "INSERT INTO esp_url_table (project_id, project_url) VALUES (?,?)";
+      const saveurlValues = [project_id, espUrl];
+      await new Promise((resolve, reject) => {
+        db.query(saveurl, saveurlValues, (error, data) => {
+          if (error) reject(error);
+          else resolve(data);
+        });
+      });
+
       console.log("espurl: ", espUrl);
     } else {
       res
