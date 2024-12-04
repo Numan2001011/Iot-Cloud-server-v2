@@ -156,7 +156,7 @@ const Profile = () => {
               height="100px"
               width="100px"
             />
-            <p className="">Name : {userinfo?.name || "Md. Numanur Rahman"}</p>
+            <p className="">Name : {userinfo?.name || "Nomanur Rahman"}</p>
             <p>Username : {userinfo?.username || "noman011"}</p>
           </div>
           <div className="col-md-8 project-section container">

@@ -251,7 +251,7 @@ app.get("/getprojects", async (req, res) => {
   }
 });
 
-const baseUrl = "http://192.168.1.108:5000/"; //change this when changing the network
+const baseUrl = "http://192.168.1.108:5000/sendespdata/"; //change this when changing the network
 
 app.get("/showproject/:id", async (req, res) => {
   const projectId = req.params.id;
@@ -305,7 +305,7 @@ app.get("/showproject/:id", async (req, res) => {
               )}_value_field`
           )
           .join("&&");
-      console.log("Sensors: ", sensors.length);
+      console.log("Number of sensors : ", sensors.length);
       console.log("espurl: ", espUrl);
 
       res.json({ project, sensors, espUrl });
@@ -343,56 +343,6 @@ app.delete("/deleteproject/:project_id", async (req, res) => {
     res.status(500).json({ message: "Failed to delete the project." });
   }
 });
-
-// app.get("/showproject/:id", async (req, res) => {
-//   const projectId = req.params.id;
-//   try {
-//     const project = await new Promise((resolve, reject) => {
-//       db.query(
-//         "SELECT * FROM project_table WHERE project_id = ?",
-//         [projectId],
-//         (error, results) => {
-//           if (error) reject(error);
-//           else resolve(results[0]);
-//         }
-//       );
-//     });
-
-//     if (!project) {
-//       return res.status(404).json({ message: "Project not found." });
-//     }
-
-//     const sensors = await new Promise((resolve, reject) => {
-//       db.query(
-//         "SELECT * FROM sensor_table WHERE project_id = ?",
-//         [projectId],
-//         (error, results) => {
-//           if (error) reject(error);
-//           else resolve(results);
-//         }
-//       );
-//     });
-
-//     const findespurl =
-//       "SELECT project_url from esp_url_table where project_id = ?";
-//     const esp_url = await new Promise((resolve, reject) => {
-//       db.query(findespurl, [projectId], (error, data) => {
-//         if (error) reject(error);
-//         else resolve(data);
-//       });
-//     });
-//     console.log("espurl: ", esp_url[0].project_url);
-//     const projecturl = esp_url[0].project_url;
-//     if (projecturl) {
-//       res.json({ project, sensors, projecturl });
-//     } else {
-//       res.json({ project, sensors });
-//     }
-//   } catch (error) {
-//     console.error("Error fetching project details:", error);
-//     res.status(500).json({ message: "Error fetching project details." });
-//   }
-// });
 
 app.post("/addsensor", async (req, res) => {
   const { project_id, sensor_name } = req.body;
@@ -508,6 +458,53 @@ app.post("/initproject", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Failed to initialize project" });
+  }
+});
+
+app.get("/sendespdata/:datastring", async (req, res) => {
+  try {
+    const data_string = req.params.datastring;
+    console.log("ESP String:", data_string);
+    const sensorvaluepairs = data_string.split("&&");
+    console.log("value pair:", sensorvaluepairs);
+
+    const sensorData = sensorvaluepairs.map((pair) => {
+      const [sensor_key, sensor_value] = pair.split("=");
+      return { sensor_key, sensor_value };
+    });
+    console.log(sensorData);
+    for (const { sensor_key, sensor_value } of sensorData) {
+      const sensorId = await new Promise((resolve, reject) => {
+        db.query(
+          "SELECT sensor_id from sensor_table where sensor_key = ?",
+          [sensor_key],
+          (error, data) => {
+            if (error) reject(error);
+            if (data.length === 0) return resolve(null);
+            resolve(data[0].sensor_id);
+          }
+        );
+      });
+      if (!sensorId) {
+        console.error(`Sensor not found with ${sensor_key}`);
+        continue;
+      }
+      await new Promise((resolve, reject) => {
+        db.query(
+          "INSERT INTO sensordata_table (sensor_id, sensor_value, arrival_time) VALUES (?,?,?)",
+          [sensorId, sensor_value, new Date()],
+          (error, data) => {
+            if (error) reject(error);
+            resolve(data);
+          }
+        );
+      });
+      console.log(`Data saved: sensor id ${sensorId}, Value ${sensor_value}`);
+    }
+    res.status(200).json({ message: "Sensor data saved successfully." });
+  } catch (error) {
+    console.error("Error saving data:", error);
+    res.status(500).json({ message: "Failed to save sensor data" });
   }
 });
 
