@@ -37,8 +37,8 @@ const ProjectDetails: React.FC = () => {
       const response = await axios.get(
         `http://localhost:5000/showproject/${id}`
       );
-      if (response.data.projecturl) {
-        setEsp_url(response.data.projecturl);
+      if (response.data.espUrl) {
+        setEsp_url(response.data.espUrl);
       }
       setProject(response.data.project);
       setSensors(response.data.sensors); // Assuming the API returns project and sensors
@@ -47,7 +47,7 @@ const ProjectDetails: React.FC = () => {
       if (response.data.project.project_status == 1) {
         // setButtonInvalid(true);
       } else {
-        setButtonInvalid(false);
+        // setButtonInvalid(false);
       }
     } catch (err) {
       setError("Failed to fetch project details.");
@@ -121,7 +121,7 @@ const ProjectDetails: React.FC = () => {
           console.log("init res:", response.data.espUrl);
           setEsp_url(response.data.espUrl);
 
-          // setButtonInvalid(true);
+          setButtonInvalid(true);
         }
       } catch (error) {
         console.error("Error initializing project:", error);
@@ -198,35 +198,54 @@ const ProjectDetails: React.FC = () => {
         )}
       </div>
 
-      <div className="sensor-div d-flex flex-column container mb-4">
-        {!buttonInvalid && (
-          <button onClick={handleInitializeProject}>Initialize Project</button>
-        )}
-      </div>
+      {!buttonInvalid && (
+        <>
+          <div className="init-btn-div d-flex flex-column  align-items-center container mb-4">
+            <h4 className="h4 text-warning text-center">WARNING</h4>
+            <p>
+              After finalizing your sensors, you have to initialize the project
+              to use this as a cloud server.{" "}
+              <span className="text-danger">
+                <i>
+                  Once you initialize this, you cannot make changes to your
+                  sensors.
+                </i>
+              </span>
+            </p>
+            <p>Click below to initialize your project.</p>
 
-      <div className=" border rounded">
-        <h3 className="h3 text-center">Follow the Instructions:</h3>
-        <p>Use this ESP_URL to send data to the IOT Cloud Server.</p>
-        <p>
-          <strong>ESP_URL: </strong>
-          <span className="text-success">
-            <i>{esp_url}</i>
-          </span>
-        </p>
-        <p>To use this, you need to go through some changes:</p>
-        <ul>
-          <li>Copy the whole URL and paste it into your ESP32 code.</li>
-          <li>
-            When sending data, replace the{" "}
-            <strong>Sensor_name_value_field</strong> with actual sensor
-            value(numerical sensor data)
-          </li>
-          <li>
-            Use delay 15 seconds so that the data is properly handled by the
-            cloud server.
-          </li>
-        </ul>
-      </div>
+            <button onClick={handleInitializeProject} className="btn init-btn">
+              Initialize Project
+            </button>
+          </div>
+        </>
+      )}
+
+      {buttonInvalid && (
+        <div className=" border rounded p-3">
+          <h3 className="h3 text-center">Follow the Instructions:</h3>
+          <p>Use this ESP_URL to send data to the IOT Cloud Server.</p>
+          <p>
+            <strong>ESP_URL: </strong>
+            <span className="text-success">
+              <i>{esp_url}</i>
+            </span>
+          </p>
+          <p>To use this, you need to go through some changes:</p>
+          <ul>
+            <li>Copy the whole URL and paste it into your ESP32 code.</li>
+            <li>
+              When sending data, replace the{" "}
+              <strong>Sensor_name_value_field</strong> with actual sensor
+              value(numerical sensor data)
+            </li>
+            <li>
+              Use delay 15 seconds so that the data is properly handled by the
+              cloud server.
+            </li>
+          </ul>
+        </div>
+      )}
 
       {/* Modal for Adding Sensor */}
       <Modal show={showModal} onHide={handleCloseModal}>

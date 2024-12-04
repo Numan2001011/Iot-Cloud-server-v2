@@ -251,6 +251,8 @@ app.get("/getprojects", async (req, res) => {
   }
 });
 
+const baseUrl = "http://192.168.1.108:5000/"; //change this when changing the network
+
 app.get("/showproject/:id", async (req, res) => {
   const projectId = req.params.id;
   try {
@@ -280,18 +282,32 @@ app.get("/showproject/:id", async (req, res) => {
       );
     });
 
-    const findespurl =
-      "SELECT project_url from esp_url_table where project_id = ?";
-    const esp_url = await new Promise((resolve, reject) => {
-      db.query(findespurl, [projectId], (error, data) => {
-        if (error) reject(error);
-        else resolve(data);
-      });
+    const project_status = await new Promise((resolve, reject) => {
+      db.query(
+        "SELECT project_status from project_table WHERE project_id=?",
+        [projectId],
+        (error, results) => {
+          if (error) reject(error);
+          else resolve(results[0].project_status);
+        }
+      );
     });
-    console.log("espurl: ", esp_url[0].project_url);
-    const projecturl = esp_url[0].project_url;
-    if (projecturl) {
-      res.json({ project, sensors, projecturl });
+
+    if (project_status == 1) {
+      const espUrl =
+        baseUrl +
+        sensors
+          .map(
+            (sensor, index) =>
+              `${sensor.sensor_key}=${sensor.sensor_name.replace(
+                /\s+/g,
+                ""
+              )}_value_field`
+          )
+          .join("&&");
+      console.log("espurl: ", espUrl);
+
+      res.json({ project, sensors, espUrl });
     } else {
       res.json({ project, sensors });
     }
@@ -300,6 +316,56 @@ app.get("/showproject/:id", async (req, res) => {
     res.status(500).json({ message: "Error fetching project details." });
   }
 });
+
+// app.get("/showproject/:id", async (req, res) => {
+//   const projectId = req.params.id;
+//   try {
+//     const project = await new Promise((resolve, reject) => {
+//       db.query(
+//         "SELECT * FROM project_table WHERE project_id = ?",
+//         [projectId],
+//         (error, results) => {
+//           if (error) reject(error);
+//           else resolve(results[0]);
+//         }
+//       );
+//     });
+
+//     if (!project) {
+//       return res.status(404).json({ message: "Project not found." });
+//     }
+
+//     const sensors = await new Promise((resolve, reject) => {
+//       db.query(
+//         "SELECT * FROM sensor_table WHERE project_id = ?",
+//         [projectId],
+//         (error, results) => {
+//           if (error) reject(error);
+//           else resolve(results);
+//         }
+//       );
+//     });
+
+//     const findespurl =
+//       "SELECT project_url from esp_url_table where project_id = ?";
+//     const esp_url = await new Promise((resolve, reject) => {
+//       db.query(findespurl, [projectId], (error, data) => {
+//         if (error) reject(error);
+//         else resolve(data);
+//       });
+//     });
+//     console.log("espurl: ", esp_url[0].project_url);
+//     const projecturl = esp_url[0].project_url;
+//     if (projecturl) {
+//       res.json({ project, sensors, projecturl });
+//     } else {
+//       res.json({ project, sensors });
+//     }
+//   } catch (error) {
+//     console.error("Error fetching project details:", error);
+//     res.status(500).json({ message: "Error fetching project details." });
+//   }
+// });
 
 app.post("/addsensor", async (req, res) => {
   const { project_id, sensor_name } = req.body;
@@ -362,7 +428,7 @@ app.delete("/removesensor/:sensor_id", async (req, res) => {
   }
 });
 
-const baseUrl = "http://192.168.1.108:5000/"; //change this when changing the network
+// const baseUrl = "http://192.168.1.108:5000/"; //change this when changing the network
 
 app.post("/initproject", async (req, res) => {
   const { project_id } = req.body;
@@ -405,18 +471,6 @@ app.post("/initproject", async (req, res) => {
           .join("&&");
 
       res.status(200).json({ espUrl });
-
-      const saveurl =
-        "INSERT INTO esp_url_table (project_id, project_url) VALUES (?,?)";
-      const saveurlValues = [project_id, espUrl];
-      await new Promise((resolve, reject) => {
-        db.query(saveurl, saveurlValues, (error, data) => {
-          if (error) reject(error);
-          else resolve(data);
-        });
-      });
-
-      console.log("espurl: ", espUrl);
     } else {
       res
         .status(404)
