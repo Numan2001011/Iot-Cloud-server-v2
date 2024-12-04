@@ -107,10 +107,11 @@ const ProjectDetails: React.FC = () => {
   const [buttonInvalid, setButtonInvalid] = useState(false);
   const handleInitializeProject = async () => {
     console.log("Initialized project: ", project?.project_name);
+    const windowresult = window.confirm(`Do you want to get the WRITE URL?`);
 
-    const windowresult = window.confirm(
-      `Once you initialize the project, you cannot modify sensors. Do you want to proceed?`
-    );
+    // const windowresult = window.confirm(
+    //   `Once you initialize the project, you cannot modify sensors. Do you want to proceed?`
+    // );
     if (!windowresult) return;
     else {
       try {
@@ -198,30 +199,76 @@ const ProjectDetails: React.FC = () => {
         )}
       </div>
 
-      {!buttonInvalid && (
+      {/* {!buttonInvalid && (
         <>
           <div className="init-btn-div d-flex flex-column  align-items-center container mb-4">
-            <h4 className="h4 text-warning text-center">WARNING</h4>
+            <h4 className="h4 text-success text-center">NOTE</h4>
             <p>
-              After finalizing your sensors, you have to initialize the project
-              to use this as a cloud server.{" "}
-              <span className="text-danger">
-                <i>
-                  Once you initialize this, you cannot make changes to your
-                  sensors.
-                </i>
-              </span>
+              After finalizing your sensors, you have to click{" "}
+              <strong>VIEW WRITE URL</strong> to get the ESP URL Link. Use this
+              link to send data to the IoT Cloud Server.{" "}
             </p>
-            <p>Click below to initialize your project.</p>
+            <p>Click below to generate Write URL for your project.</p>
 
             <button onClick={handleInitializeProject} className="btn init-btn">
-              Initialize Project
+              VIEW WRITE URL
             </button>
           </div>
         </>
-      )}
+      )} */}
 
-      {buttonInvalid && (
+      <div className="init-btn-div d-flex flex-column  align-items-center container mb-4">
+        <h4 className="h4 text-success text-center">NOTE</h4>
+        <p>
+          After finalizing your sensors, you have to click{" "}
+          <strong>VIEW WRITE URL</strong> to get the ESP URL Link. Use this link
+          to send data to the IoT Cloud Server.{" "}
+          <span className="text-danger">
+            <i>
+              After adding or deleting any sensor, you must click the button or
+              refresh the page to get updated URL
+            </i>
+          </span>
+        </p>
+        <p>Click below to generate Write URL for your project.</p>
+
+        <button onClick={handleInitializeProject} className="btn init-btn">
+          VIEW WRITE URL
+        </button>
+
+        <p className="mt-3">
+          <strong>ESP_WRITE_URL: </strong>
+          <span className="text-success">
+            <i>{esp_url}</i>
+          </span>
+        </p>
+      </div>
+
+      <div className=" border rounded p-3">
+        <h3 className="h3 text-center">Follow the Instructions:</h3>
+        <p>Use this ESP_URL to send data to the IOT Cloud Server.</p>
+        <p>
+          <strong>ESP_WRITE_URL: </strong>
+          <span className="text-success">
+            <i>{esp_url}</i>
+          </span>
+        </p>
+        <p>To use this, you need to go through some changes:</p>
+        <ul>
+          <li>Copy the whole URL and paste it into your ESP32 code.</li>
+          <li>
+            When sending data, replace the{" "}
+            <strong>Sensor_name_value_field</strong> with actual sensor
+            value(numerical sensor data)
+          </li>
+          <li>
+            Use delay 15 seconds so that the data is properly handled by the
+            cloud server.
+          </li>
+        </ul>
+      </div>
+
+      {/* {buttonInvalid && (
         <div className=" border rounded p-3">
           <h3 className="h3 text-center">Follow the Instructions:</h3>
           <p>Use this ESP_URL to send data to the IOT Cloud Server.</p>
@@ -245,7 +292,7 @@ const ProjectDetails: React.FC = () => {
             </li>
           </ul>
         </div>
-      )}
+      )} */}
 
       {/* Modal for Adding Sensor */}
       <Modal show={showModal} onHide={handleCloseModal}>

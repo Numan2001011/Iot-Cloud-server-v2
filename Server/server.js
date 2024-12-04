@@ -293,7 +293,7 @@ app.get("/showproject/:id", async (req, res) => {
       );
     });
 
-    if (project_status == 1) {
+    if (sensors.length !== 0 && project_status == 1) {
       const espUrl =
         baseUrl +
         sensors
@@ -305,11 +305,16 @@ app.get("/showproject/:id", async (req, res) => {
               )}_value_field`
           )
           .join("&&");
+      console.log("Sensors: ", sensors.length);
       console.log("espurl: ", espUrl);
 
       res.json({ project, sensors, espUrl });
     } else {
-      res.json({ project, sensors });
+      res.json({
+        project,
+        sensors,
+        espUrl: "No sensors found in the project.",
+      });
     }
   } catch (error) {
     console.error("Error fetching project details:", error);
@@ -471,6 +476,8 @@ app.post("/initproject", async (req, res) => {
           .join("&&");
 
       res.status(200).json({ espUrl });
+    } else if (get_sensor_key.length == 0) {
+      res.status(200).json({ espUrl: "No sensor found in the project." });
     } else {
       res
         .status(404)
