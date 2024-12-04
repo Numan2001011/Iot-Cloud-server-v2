@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import "./ProjectDetails.css";
 import { Button, Form, Modal } from "react-bootstrap";
@@ -52,6 +52,21 @@ const ProjectDetails: React.FC = () => {
     } catch (err) {
       setError("Failed to fetch project details.");
       setLoading(false);
+    }
+  };
+
+  const navigate = useNavigate();
+  const handleDeleteProject = async () => {
+    const deleteproject = window.confirm(
+      `Are you sure you want to delete ${project?.project_name} project?`
+    );
+    if (!deleteproject) return;
+
+    try {
+      await axios.delete(`http://localhost:5000/deleteproject/${id}`);
+      navigate("/profile");
+    } catch (error) {
+      alert("Failed to delete project");
     }
   };
 
@@ -154,8 +169,14 @@ const ProjectDetails: React.FC = () => {
         <h2 className="text-center text-fuild project-name">
           {project.project_name}
         </h2>
-        <p className="text-center">Project ID: {project.project_id}</p>
+        {/* <p className="text-center">Project ID: {project.project_id}</p> */}
       </div>
+      <div className="d-flex justify-content-center mt-3">
+        <button onClick={handleDeleteProject} className="btn btn-danger">
+          DELETE PROJECT
+        </button>
+      </div>
+      <hr style={{ border: "1px solid black", margin: "10px 0" }} />
       <div className="text-center mt-4 d-flex justify-content-around">
         <button
           className="btn btn-primary"
@@ -216,6 +237,8 @@ const ProjectDetails: React.FC = () => {
           </div>
         </>
       )} */}
+
+      <hr style={{ border: "1px solid black", margin: "10px 0" }} />
 
       <div className="init-btn-div d-flex flex-column  align-items-center container mb-4">
         <h4 className="h4 text-success text-center">NOTE</h4>

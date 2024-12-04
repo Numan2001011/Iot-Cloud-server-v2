@@ -322,6 +322,28 @@ app.get("/showproject/:id", async (req, res) => {
   }
 });
 
+app.delete("/deleteproject/:project_id", async (req, res) => {
+  const project_id = req.params.project_id;
+  const deleteprojectQuery = "DELETE from project_table where project_id = ?";
+  const deleteProjectValue = [project_id];
+  try {
+    const result = await new Promise((resolve, reject) => {
+      db.query(deleteprojectQuery, deleteProjectValue, (error, data) => {
+        if (error) reject(error);
+        else resolve(data);
+      });
+    });
+    if (result.affectedRows > 0) {
+      res.status(200).json({ message: "Project successfully deleted." });
+    } else {
+      res.status(404).json({ message: "Project not found." });
+    }
+  } catch (error) {
+    console.error("Project deleting error:", error);
+    res.status(500).json({ message: "Failed to delete the project." });
+  }
+});
+
 // app.get("/showproject/:id", async (req, res) => {
 //   const projectId = req.params.id;
 //   try {

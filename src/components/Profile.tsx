@@ -1,27 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import profileixon from "../../images/profileicon.png";
 import "./Profile.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Modal, Button, Form } from "react-bootstrap";
 import { z } from "zod";
 import axios from "axios";
+import Project from "./Projectlist";
+import { useNavigate } from "react-router-dom";
 
 interface Userinfo {
   name: string;
   username: string;
 }
 
-const sensorSchema = z
-  .string()
-  .min(1, "Sensor name is required")
-  .regex(/[a-zA-Z]/, "Use a valid sensor name.");
+// const sensorSchema = z
+//   .string()
+//   .min(1, "Sensor name is required")
+//   .regex(/[a-zA-Z]/, "Use a valid sensor name.");
 
 const schema = z.object({
   projectName: z.string().min(1, "Project name is required"),
-  numSensors: z.number().min(1, "At least one sensor is required"),
-  sensorNames: z
-    .array(sensorSchema)
-    .min(1, "At least one sensor name is required"),
+  // numSensors: z.number().min(1, "At least one sensor is required"),
+  // sensorNames: z
+  //   .array(sensorSchema)
+  //   .min(1, "At least one sensor name is required"),
 });
 
 const Profile = () => {
@@ -40,29 +42,29 @@ const Profile = () => {
     resetForm();
   };
 
-  const handleNumSensorsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    setNumSensors(value);
-    setSensorNames(Array(value).fill("")); // Reset sensor names based on new number
-  };
+  // const handleNumSensorsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const value = parseInt(e.target.value);
+  //   setNumSensors(value);
+  //   setSensorNames(Array(value).fill("")); // Reset sensor names based on new number
+  // };
 
-  const handleSensorNameChange = (index: number, value: string) => {
-    const updatedSensorNames = [...sensorNames];
-    updatedSensorNames[index] = value;
-    setSensorNames(updatedSensorNames);
-  };
+  // const handleSensorNameChange = (index: number, value: string) => {
+  //   const updatedSensorNames = [...sensorNames];
+  //   updatedSensorNames[index] = value;
+  //   setSensorNames(updatedSensorNames);
+  // };
 
   const resetForm = () => {
     setProjectName("");
-    setNumSensors(0);
-    setSensorNames([]);
+    // setNumSensors(0);
+    // setSensorNames([]);
     setErrors({});
   };
 
   const formData = {
-    projectname: projectName,
-    num_of_sensors: numSensors,
-    sensor_names: sensorNames.toString(),
+    project_name: projectName,
+    // num_of_sensors: numSensors,
+    // sensor_names: sensorNames.toString(),
   };
 
   const submitProject = async () => {
@@ -76,6 +78,7 @@ const Profile = () => {
 
       if (response.status === 201) {
         alert(response.data.message || "Project created successfully.");
+        await fetchProjects();
       } else {
         alert("Unexpected response from the server.");
       }
@@ -95,8 +98,8 @@ const Profile = () => {
     // Validate the form data
     const result = schema.safeParse({
       projectName,
-      numSensors,
-      sensorNames,
+      // numSensors,
+      // sensorNames,
     });
 
     if (!result.success) {
@@ -115,6 +118,30 @@ const Profile = () => {
     } catch (error) {
       console.error("Error submitting project:", error);
     }
+  };
+
+  const [projects, setProjects] = useState<any[]>([]); // State for projects
+
+  // Fetch projects from the server
+  const fetchProjects = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/getprojects");
+      setProjects(response.data);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      alert("Failed to fetch projects.");
+    }
+  };
+
+  useEffect(() => {
+    fetchProjects(); // Fetch projects when the component mounts
+  }, []);
+
+  const navigate = useNavigate();
+
+  const handleProjectClick = (project: { project_id: number }) => {
+    alert("Entering into project");
+    navigate(`/project/${project.project_id}`);
   };
 
   return (
@@ -139,10 +166,22 @@ const Profile = () => {
                 Create New Project
               </button>
             </div>
-            <div className="text-center mt-5">
-              <p>No Project available.</p>
+            <div className="text-center mt-2">
+              {projects.length > 0 ? (
+                projects.map((project, index) => (
+                  <Project
+                    key={index}
+                    project_name={project.project_name}
+                    project_id={project.project_id}
+                    // num_of_sensors={project.num_of_sensors}
+                    // sensor_names={project.sensor_names.split(",")}
+                    onClick={() => handleProjectClick(project)}
+                  />
+                ))
+              ) : (
+                <p>No Project available.</p>
+              )}
             </div>
-            
           </div>
         </div>
       </section>
@@ -168,8 +207,8 @@ const Profile = () => {
                 {errors.projectName}
               </Form.Control.Feedback>
             </Form.Group>
-            <Form.Group controlId="numSensors">
-              <Form.Label>Number of Sensors</Form.Label>
+            {/* <Form.Group controlId="numSensors"> */}
+            {/* <Form.Label>Number of Sensors</Form.Label>
               <Form.Control
                 type="number"
                 className="custom-hover-input border border-info"
@@ -183,8 +222,8 @@ const Profile = () => {
               <Form.Control.Feedback type="invalid">
                 {errors.numSensors}
               </Form.Control.Feedback>
-            </Form.Group>
-            {Array.from({ length: numSensors }).map((_, index) => (
+            </Form.Group> */}
+            {/* {Array.from({ length: numSensors }).map((_, index) => (
               <Form.Group key={index} controlId={`sensorName${index}`}>
                 <Form.Label>Sensor Name {index + 1}</Form.Label>
                 <Form.Control
@@ -201,7 +240,7 @@ const Profile = () => {
                   {errors.sensorNames}
                 </Form.Control.Feedback>
               </Form.Group>
-            ))}
+            ))} */}
             <Button variant="primary" type="submit">
               Submit
             </Button>
