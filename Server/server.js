@@ -1,13 +1,42 @@
 import express from "express";
 import cors from "cors";
 import db from "./database.js";
+import "dotenv/config";
 import transporter from "./Transporter.js";
+import jwt from "jsonwebtoken";
+import session from "express-session";
+import cookieParser from "cookie-parser";
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
 
-app.use(cors());
+// Session middleware configuration
+app.use(
+  session({
+    secret: process.env.SECRET_KEY, // Store your secret key in .env
+    resave: false, // Prevents resaving session data unless modified
+    saveUninitialized: false, // Prevents saving empty sessions
+    cookie: {
+      maxAge: 3600000, // Session expires in 1 hour (in milliseconds)
+      httpOnly: true, // Prevent client-side JavaScript from accessing the cookie
+    },
+  })
+);
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "http://localhost/phpmyadmin/index.php/",
+    ],
+    credentials: true, // Allow sending credentials with requestss
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
+app.use(cookieParser()); // Make sure this is before any route handling
 
 db.connect();
 
@@ -28,10 +57,29 @@ app.post("/loginuser", async (req, res) => {
 
     if (userResult.length === 0) {
       // User does not exist
-      return res.status(404).json({ message: "Invalid credentials." });
+      return res
+        .status(404)
+        .json({ auth: false, message: "Invalid credentials." });
     }
 
     const user = userResult[0];
+    if (user.password !== password) {
+      return res
+        .status(401)
+        .json({ auth: false, message: "Invalid credentials." });
+    }
+    // Save user data in session
+    req.session.user = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      username: user.username,
+    };
+
+    const id = user.id;
+    const token = jwt.sign({ id }, process.env.SECRET_KEY, {
+      expiresIn: "1h",
+    });
 
     // Check if the user is active
     // if (user.is_active === 0) {
@@ -41,21 +89,53 @@ app.post("/loginuser", async (req, res) => {
     // Validate password (assuming you store hashed passwords, you should use a hashing library like bcrypt)
     // Here, you should compare the stored hashed password with the provided password
     // For demonstration, let's assume the password is stored in plain text (not recommended)
-    if (user.password !== password) {
-      return res.status(401).json({ message: "Invalid credentials." });
-    }
 
+    // Set the token in the HTTP-only cookie
+    res.cookie("token", token, {
+      httpOnly: true, // Ensure JavaScript cannot access the cookie
+      secure: process.env.NODE_ENV === "production", // Use 'secure' in production
+      maxAge: 3600000, // 1 hour
+    });
     // Successful login
-    res.status(200).send({
+    res.status(200).json({
       message: "Login successful",
-      email: user.email,
-      name: user.name,
-      username: user.username,
+      auth: true,
+      token: token,
+      user: req.session.user,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error logging in." });
+    res.status(500).json({ auth: false, message: "Error logging in." });
   }
+});
+
+const verifyJWT = (req, res, next) => {
+  const token = req.cookies.token; // Access the token from the cookie
+
+  if (!token) {
+    return res
+      .status(401)
+      .json({ message: "Access denied. No token provided." });
+  }
+
+  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    if (err) {
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({ auth: false, message: "Token expired." });
+      }
+      return res.status(401).json({ auth: false, message: "Invalid token." });
+    }
+    req.user_id = decoded.id;
+    next();
+  });
+};
+
+//when user will call the api, it will call the verifyJWT middleware first
+app.get("/getuser", verifyJWT, (req, res) => {
+  if (!req.session.user) {
+    return res.status(404).json({ message: "User session not found." });
+  }
+  res.status(200).json(req.session.user);
 });
 
 app.post("/signup/registerusers", async (req, res) => {
@@ -132,32 +212,53 @@ app.post("/signup/registerusers", async (req, res) => {
   }
 });
 
-app.post("/createproject", async (req, res) => {
-  console.log("Req body:", req.body);
-  // const { projectname, num_of_sensors, sensor_names } = req.body;
+app.post("/createproject", verifyJWT, async (req, res) => {
+  console.log("Creating project with body:", req.body);
+  console.log("Session user:", req.session.user);
+
+  if (!req.session.user) {
+    return res
+      .status(403)
+      .json({ message: "User is not authorized to create a project." });
+  }
+
+  console.log("Request body:", req.body);
+  console.log("Session user:", req.session.user);
+
   const project_status = 0;
   const { project_name } = req.body;
-  const username = "noman011";
+  const username = req.session.user.username; // Use the logged-in user's username
   const createUrl =
     "INSERT into project_table(username, project_name, project_status) VALUES(?,?,?)";
   const projectValues = [username, project_name, project_status];
   try {
     const projectResult = await new Promise((resolve, reject) => {
       db.query(createUrl, projectValues, (error, data) => {
-        if (error) reject(error);
-        else resolve(data);
+        if (error) {
+          console.error("Database error:", error);
+          reject(error);
+        } else {
+          resolve(data);
+        }
       });
     });
     res.status(201).json({ message: "Project created successfully." });
   } catch (error) {
-    console.error(error);
+    console.error("Error creating project:", error);
     res.status(500).send("Error creating project.");
   }
 });
 
 //project get method
-app.get("/getprojects", async (req, res) => {
-  const username = "noman011"; // Replace with dynamic authentication logic
+app.get("/getprojects", verifyJWT, async (req, res) => {
+  console.log("Getting projects for user:", req.session.user.username);
+  if (!req.session.user) {
+    return res
+      .status(401)
+      .json({ message: "User is not authorized to create a project." });
+  }
+  const username = req.session.user.username;
+
   const fetchProjectsSql = "SELECT * FROM project_table WHERE username = ?";
   try {
     const projects = await new Promise((resolve, reject) => {
@@ -166,31 +267,47 @@ app.get("/getprojects", async (req, res) => {
         else resolve(results);
       });
     });
+    if (!projects) {
+      return res
+        .status(404)
+        .json({ auth: false, message: "No projects found." });
+    }
     res.status(200).json(projects);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error retrieving projects." });
+    res
+      .status(500)
+      .json({ auth: false, message: "Error retrieving projects." });
   }
 });
 
 const baseUrl = "http://192.168.1.108:5000/sendespdata/"; //change this when changing the network
 
-app.get("/showproject/:id", async (req, res) => {
+app.get("/showproject/:id", verifyJWT, async (req, res) => {
+  if (!req.session.user) {
+    return res
+      .status(401)
+      .json({ message: "This is an unauthorizeed project." });
+  }
   const projectId = req.params.id;
+  const username = req.session.user.username;
+
   try {
     const project = await new Promise((resolve, reject) => {
       db.query(
-        "SELECT * FROM project_table WHERE project_id = ?",
-        [projectId],
+        "SELECT * FROM project_table WHERE username = ? AND project_id = ?",
+        [username, projectId],
         (error, results) => {
           if (error) reject(error);
-          else resolve(results[0]);
+          else resolve(results);
         }
       );
     });
 
     if (!project) {
-      return res.status(404).json({ message: "Project not found." });
+      return res
+        .status(404)
+        .json({ auth: false, message: "Project not found." });
     }
 
     const sensors = await new Promise((resolve, reject) => {
@@ -230,9 +347,10 @@ app.get("/showproject/:id", async (req, res) => {
       console.log("Number of sensors : ", sensors.length);
       console.log("espurl: ", espUrl);
 
-      res.json({ project, sensors, espUrl });
+      res.json({ auth: true, project, sensors, espUrl });
     } else {
       res.json({
+        auth: true,
         project,
         sensors,
         espUrl: "No sensors found in the project.",
@@ -240,11 +358,18 @@ app.get("/showproject/:id", async (req, res) => {
     }
   } catch (error) {
     console.error("Error fetching project details:", error);
-    res.status(500).json({ message: "Error fetching project details." });
+    res
+      .status(500)
+      .json({ auth: false, message: "Error fetching project details." });
   }
 });
 
-app.delete("/deleteproject/:project_id", async (req, res) => {
+app.delete("/deleteproject/:project_id", verifyJWT, async (req, res) => {
+  if (!req.session.user) {
+    return res
+      .status(401)
+      .json({ message: "User is not authorized to create a project." });
+  }
   const project_id = req.params.project_id;
   const deleteprojectQuery = "DELETE from project_table where project_id = ?";
   const deleteProjectValue = [project_id];
@@ -266,7 +391,12 @@ app.delete("/deleteproject/:project_id", async (req, res) => {
   }
 });
 
-app.post("/addsensor", async (req, res) => {
+app.post("/addsensor", verifyJWT, async (req, res) => {
+  if (!req.session.user) {
+    return res
+      .status(401)
+      .json({ message: "User is not authorized to create a project." });
+  }
   const { project_id, sensor_name } = req.body;
 
   if (!project_id || !sensor_name) {
@@ -305,7 +435,12 @@ app.post("/addsensor", async (req, res) => {
 });
 
 // DELETE request to remove a sensor
-app.delete("/removesensor/:sensor_id", async (req, res) => {
+app.delete("/removesensor/:sensor_id", verifyJWT, async (req, res) => {
+  if (!req.session.user) {
+    return res
+      .status(401)
+      .json({ message: "User is not authorized to create a project." });
+  }
   const sensor_id = req.params.sensor_id;
   const deleteSensorQuery = "DELETE FROM sensor_table WHERE sensor_id = ?";
   const sensorValues = [sensor_id];
@@ -329,7 +464,12 @@ app.delete("/removesensor/:sensor_id", async (req, res) => {
 
 // const baseUrl = "http://192.168.1.108:5000/"; //change this when changing the network
 
-app.post("/initproject", async (req, res) => {
+app.post("/initproject", verifyJWT, async (req, res) => {
+  if (!req.session.user) {
+    return res
+      .status(401)
+      .json({ message: "User is not authorized to create a project." });
+  }
   const { project_id } = req.body;
 
   console.log("Project Id:", project_id);
@@ -428,6 +568,16 @@ app.get("/sendespdata/:datastring", async (req, res) => {
     console.error("Error saving data:", error);
     res.status(500).json({ message: "Failed to save sensor data" });
   }
+});
+
+app.get("/logout", verifyJWT, (req, res) => {
+  if (!req.session.user) {
+    return res
+      .status(401)
+      .json({ message: "User is not authorized to create a project." });
+  }
+  res.clearCookie("token"); // Clear the JWT cookie
+  res.status(200).json({ message: "Logged out successfully." });
 });
 
 app.get("/", (req, res) => {

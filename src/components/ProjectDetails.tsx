@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import "./ProjectDetails.css";
 import { Button, Form, Modal } from "react-bootstrap";
@@ -35,7 +35,10 @@ const ProjectDetails: React.FC = () => {
   const fetchProject = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/showproject/${id}`
+        `http://localhost:5000/showproject/${id}`,
+        {
+          withCredentials: true,
+        }
       );
       if (response.data.espUrl) {
         setEsp_url(response.data.espUrl);
@@ -63,7 +66,9 @@ const ProjectDetails: React.FC = () => {
     if (!deleteproject) return;
 
     try {
-      await axios.delete(`http://localhost:5000/deleteproject/${id}`);
+      await axios.delete(`http://localhost:5000/deleteproject/${id}`, {
+        withCredentials: true,
+      });
       navigate("/profile");
     } catch (error) {
       alert("Failed to delete project");
@@ -119,14 +124,16 @@ const ProjectDetails: React.FC = () => {
     }
   };
 
+  const [togglebar, setTogglebar] = useState(false);
+  const ShowHeader = () => {
+    setTogglebar(!togglebar);
+  };
+
   const [buttonInvalid, setButtonInvalid] = useState(false);
   const handleInitializeProject = async () => {
     console.log("Initialized project: ", project?.project_name);
     const windowresult = window.confirm(`Do you want to get the WRITE URL?`);
 
-    // const windowresult = window.confirm(
-    //   `Once you initialize the project, you cannot modify sensors. Do you want to proceed?`
-    // );
     if (!windowresult) return;
     else {
       try {
@@ -141,6 +148,23 @@ const ProjectDetails: React.FC = () => {
         }
       } catch (error) {
         console.error("Error initializing project:", error);
+      }
+    }
+  };
+  const handleLogout = async () => {
+    const res = window.confirm("Do you want to LOGOUT?");
+    if (!res) return;
+    else {
+      try {
+        const response = await axios.get("http://localhost:5000/logout", {
+          withCredentials: true,
+        });
+
+        if (response.status === 200) {
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("Error logging out:", error);
       }
     }
   };
@@ -162,9 +186,72 @@ const ProjectDetails: React.FC = () => {
   if (!project) {
     return <div>Project not found!</div>;
   }
-
+  const goToHome = () => {
+    const result = window.confirm("Are you sure you want to leave?");
+    if (!result) return;
+    else {
+      navigate("/");
+    }
+  };
   return (
     <>
+      <header className="header">
+        <nav className="h-nav">
+          <div className="h-nav-div">
+            <h2 className="h-nav-div-h2">SkySync IoT</h2>
+          </div>
+          <div
+            className={togglebar ? "nav-menu show" : "nav-menu"}
+            id="nav-menu"
+          >
+            <button
+              className="nav-menu-close-btn"
+              id="nav-menu-close-btn"
+              onClick={ShowHeader}
+            >
+              <i className="fa fa-window-close"></i>
+            </button>
+            <ul className="nav-menu-list">
+              <li className="nav-menu-item">
+                <button onClick={goToHome} className="nav-menu-link">
+                  Home
+                </button>
+              </li>
+              <li className="nav-menu-item">
+                <Link to="/profile" className="nav-menu-link">
+                  PROFILE
+                </Link>
+              </li>
+              <li className="nav-menu-item">
+                <a href="#apikey" className="nav-menu-link">
+                  API KEYS
+                </a>
+              </li>
+              <li className="nav-menu-item">
+                <Link to="/documentation" className="nav-menu-link">
+                  Documentation
+                </Link>
+              </li>
+              <li className="nav-menu-item">
+                <button
+                  id="home-login-btn"
+                  className="nav-menu-link text-decoration-none text-white"
+                  onClick={handleLogout}
+                >
+                  LOG OUT
+                </button>
+              </li>
+            </ul>
+          </div>
+          <button
+            className="nav-menu-toggle-btn"
+            id="toggle-btn"
+            onClick={ShowHeader}
+          >
+            <i className="fa fa-bars" aria-hidden="true"></i>
+          </button>
+        </nav>
+      </header>
       <div className="project-details">
         <h2 className="text-center text-fuild project-name">
           {project.project_name}
@@ -267,7 +354,7 @@ const ProjectDetails: React.FC = () => {
         </p>
       </div>
 
-      <div className=" border rounded p-3">
+      <div className=" border rounded p-3" id="apikey">
         <h3 className="h3 text-center">Follow the Instructions:</h3>
         <p>Use this ESP_URL to send data to the IOT Cloud Server.</p>
         <p>

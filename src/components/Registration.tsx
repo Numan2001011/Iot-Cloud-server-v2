@@ -82,49 +82,6 @@ const Registration = () => {
   //Signup button clicked
   const [signup, setSignup] = useState(false);
 
-  // const onRegSubmit = async (data: regData) => {
-  //   console.log("Data from reg: ", data);
-
-  //   try {
-  //     const response = await axios.post(
-  //       "http://localhost:5000/signup/registerusers",
-  //       data
-  //     );
-  //     console.log("Hello");
-  //     console.log("In frontend: ", response);
-  //     // Handle different response statuses
-  //     if (response.status === 201) {
-  //       alert("Registration successful! Please log in.");
-  //     } else if (response.status === 302) {
-  //       alert(
-  //         "Email already exists but not activated. Redirecting to OTP verification."
-  //       );
-  //       setSignup(true); // Redirect to OTP page or handle OTP flow
-  //     } else if (response.status === 409) {
-  //       const message = response.data;
-  //       if (message.includes("Email")) {
-  //         alert("Account already activated with this email. Please log in.");
-  //       } else if (message.includes("Username")) {
-  //         alert("Username already exists. Please try another.");
-  //       }
-  //     }
-  //   } catch (error) {
-  //     if (axios.isAxiosError(error) && error.response) {
-  //       const { status, data } = error.response;
-
-  //       if (status === 500) {
-  //         alert("Internal server error. Please try again later.");
-  //       } else {
-  //         console.error(`Unexpected error [${status}]:`, data);
-  //         alert("An unexpected error occurred.");
-  //       }
-  //     } else {
-  //       console.error("Error:", error);
-  //       alert("Unable to connect to the server. Please check your network.");
-  //     }
-  //   }
-  // };
-
   const navigate = useNavigate();
 
   const onRegSubmit = async (data: regData) => {
@@ -166,6 +123,11 @@ const Registration = () => {
         alert("Unable to connect to the server. Please check your network.");
       }
     }
+  };
+
+  const goToLogin = () => {
+    // console.log("goto login");
+    navigate("/login");
   };
 
   // console.log("Validation Errors: ", errors);
@@ -222,29 +184,6 @@ const Registration = () => {
                       </small>
                     )}
                   </div>
-
-                  {/* <div className="mb-2">
-                    <label htmlFor="sensor_no" className="form-label">
-                      Number of Sensors
-                    </label>
-                    <input
-                      type="number"
-                      id="sensor_no"
-                      {...register("num_of_sensors", { valueAsNumber: true })}
-                      className={
-                        errors.num_of_sensors
-                          ? "form-control custom-hover-input form-control-md border border-danger"
-                          : "form-control custom-hover-input form-control-md border border-info"
-                      }
-                      placeholder="How many sensors do you have?"
-                      disabled={signup}
-                    />
-                    {errors.num_of_sensors && (
-                      <small className="text-danger">
-                        {errors.num_of_sensors.message}
-                      </small>
-                    )}
-                  </div> */}
 
                   <div className="mb-2">
                     <label htmlFor="username" className="form-label">
@@ -406,7 +345,11 @@ const Registration = () => {
                     >
                       REGISTER
                     </button>
-                    <button type="button" className="reg-btn-2">
+                    <button
+                      type="button"
+                      className="reg-btn-2"
+                      onClick={goToLogin}
+                    >
                       Already have an Account? Login here
                     </button>
                   </div>

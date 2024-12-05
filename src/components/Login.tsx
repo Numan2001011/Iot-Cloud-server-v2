@@ -46,13 +46,21 @@ const Login = () => {
     try {
       const response = await axios.post(
         "http://localhost:5000/loginuser",
-        data
+        data,
+        {
+          withCredentials: true,
+        }
       );
-      // console.log("Response data: ", response.data);
 
-      // Handle successful login
-      alert("Login successful.");
-      navigate("/profile");
+      if (response.status == 200 && response.data.token) {
+        // Set cookie without HttpOnly if you want to access it via JavaScript
+        document.cookie = `token=${response.data.token}; path=/; ${
+          window.location.protocol === "https:" ? "secure;" : ""
+        }`;
+
+        alert("Login successful.");
+        navigate("/profile");
+      }
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         // Extract response details
