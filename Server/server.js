@@ -58,37 +58,6 @@ app.post("/loginuser", async (req, res) => {
   }
 });
 
-// // Login route
-// app.post("/loginuser", async (req, res) => {
-//   const { email, password } = req.body;
-
-//   // SQL query to find the user by email, selecting only email and password
-//   const query = "SELECT email, password FROM users WHERE email = ?";
-
-//   try {
-//     // Use a promise-based approach for the database query
-//     const [results] = await db.promise().query(query, [email]);
-
-//     // Check if the user exists
-//     if (results.length === 0) {
-//       return res.status(404).json({ message: "Email doesn't exist." });
-//     }
-
-//     const user = results[0];
-
-//     // Check if the password matches (assuming passwords are stored in plain text, which is not recommended)
-//     if (user.password !== password) {
-//       return res.status(400).json({ message: "Incorrect password." });
-//     }
-
-//     // Successful login
-//     res.status(200).json({ message: "Login successful" });
-//   } catch (error) {
-//     console.error("Error during login:", error);
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });
-
 app.post("/signup/registerusers", async (req, res) => {
   const { email, username, name, password } = req.body;
   console.log("from backend: ", req.body);
@@ -162,53 +131,6 @@ app.post("/signup/registerusers", async (req, res) => {
     res.status(500).send("Error registering user.");
   }
 });
-
-// app.post("/createproject", async (req, res) => {
-//   console.log("Req body:", req.body);
-//   const { projectname, num_of_sensors, sensor_names } = req.body;
-
-//   const username = "noman011";
-//   const createUrl =
-//     "INSERT into project_table(username, projectname, num_of_sensors, sensor_names) VALUES(?,?,?,?)";
-//   const projectValues = [
-//     username,
-//     projectname,
-//     num_of_sensors,
-//     JSON.stringify(sensor_names),
-//   ];
-
-//   try {
-//     // Insert project information into project_table
-//     const projectResult = await new Promise((resolve, reject) => {
-//       db.query(createUrl, projectValues, (error, data) => {
-//         if (error) reject(error);
-//         else resolve(data);
-//       });
-//     });
-
-//     // Create sensor_table dynamically
-//     const createSensorTableQuery = `
-//       CREATE TABLE IF NOT EXISTS sensor_table_${projectname} (
-//         username VARCHAR(255),
-//         ${sensor_names.map((name) => `${name} VARCHAR(255)`).join(", ")}
-//       )
-//     `;
-
-//     await new Promise((resolve, reject) => {
-//       db.query(createSensorTableQuery, (error, data) => {
-//         if (error) reject(error);
-//         else resolve(data);
-//       });
-//     });
-
-//     res
-//       .status(201)
-//       .json({ message: "Project and sensor table created successfully." });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send("Error creating project or sensor table.");
-//   }
-// });
 
 app.post("/createproject", async (req, res) => {
   console.log("Req body:", req.body);

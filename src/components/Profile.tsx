@@ -13,17 +13,8 @@ interface Userinfo {
   username: string;
 }
 
-// const sensorSchema = z
-//   .string()
-//   .min(1, "Sensor name is required")
-//   .regex(/[a-zA-Z]/, "Use a valid sensor name.");
-
 const schema = z.object({
   projectName: z.string().min(1, "Project name is required"),
-  // numSensors: z.number().min(1, "At least one sensor is required"),
-  // sensorNames: z
-  //   .array(sensorSchema)
-  //   .min(1, "At least one sensor name is required"),
 });
 
 const Profile = () => {
@@ -31,8 +22,6 @@ const Profile = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [projectName, setProjectName] = useState("");
-  const [numSensors, setNumSensors] = useState(0);
-  const [sensorNames, setSensorNames] = useState<string[]>([]);
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
@@ -42,29 +31,13 @@ const Profile = () => {
     resetForm();
   };
 
-  // const handleNumSensorsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const value = parseInt(e.target.value);
-  //   setNumSensors(value);
-  //   setSensorNames(Array(value).fill("")); // Reset sensor names based on new number
-  // };
-
-  // const handleSensorNameChange = (index: number, value: string) => {
-  //   const updatedSensorNames = [...sensorNames];
-  //   updatedSensorNames[index] = value;
-  //   setSensorNames(updatedSensorNames);
-  // };
-
   const resetForm = () => {
     setProjectName("");
-    // setNumSensors(0);
-    // setSensorNames([]);
     setErrors({});
   };
 
   const formData = {
     project_name: projectName,
-    // num_of_sensors: numSensors,
-    // sensor_names: sensorNames.toString(),
   };
 
   const submitProject = async () => {
@@ -98,8 +71,6 @@ const Profile = () => {
     // Validate the form data
     const result = schema.safeParse({
       projectName,
-      // numSensors,
-      // sensorNames,
     });
 
     if (!result.success) {
@@ -110,8 +81,6 @@ const Profile = () => {
       setErrors(validationErrors);
       return;
     }
-
-    console.log("Sensors:", sensorNames);
     try {
       await submitProject(); // Call the API
       handleClose(); // Close modal after successful submission
