@@ -47,14 +47,36 @@ const ProjectDetails: React.FC = () => {
       setSensors(response.data.sensors); // Assuming the API returns project and sensors
 
       setLoading(false);
-      if (response.data.project.project_status == 1) {
-        // setButtonInvalid(true);
-      } else {
-        // setButtonInvalid(false);
-      }
-    } catch (err) {
-      setError("Failed to fetch project details.");
+    } catch (err: any) {
       setLoading(false);
+      // Check the error response and set an appropriate error message
+      if (axios.isAxiosError(err) && err.response) {
+        const status = err.response.status;
+        switch (status) {
+          case 401:
+            setError("401 Unauthorized. Please login again.");
+            break;
+          case 403:
+            setError("403 Forbidden.");
+            break;
+          case 404:
+            setError("Project not found.");
+            break;
+          case 500:
+            setError(
+              "Server error: Unable to fetch project details. Please try again later."
+            );
+            break;
+          default:
+            setError("An unexpected error occurred. Please try again.");
+        }
+      } else if (err.request) {
+        setError(
+          "Network error: Unable to connect to the server. Please check your internet connection."
+        );
+      } else {
+        setError(`Error: ${err.message}`);
+      }
     }
   };
 

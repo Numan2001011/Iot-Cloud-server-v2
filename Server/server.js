@@ -285,21 +285,30 @@ const baseUrl = "http://192.168.1.108:5000/sendespdata/"; //change this when cha
 
 app.get("/showproject/:id", verifyJWT, async (req, res) => {
   if (!req.session.user) {
-    return res
-      .status(401)
-      .json({ message: "This is an unauthorizeed project." });
+    return res.status(401).json({ message: "401 Unauthorized" });
   }
   const projectId = req.params.id;
   const username = req.session.user.username;
+  const findprojectuser =
+    "SELECT username from project_table WHERE project_id = ?";
 
   try {
+    const projectuser = await new Promise((resolve, reject) => {
+      db.query(findprojectuser, [projectId], (error, results) => {
+        if (error) reject(error);
+        else resolve(results[0]);
+      });
+    });
+    if (!projectuser || projectuser.username !== username) {
+      return res.status(403).json({ message: "403 Forbidden: Access denied." });
+    }
     const project = await new Promise((resolve, reject) => {
       db.query(
         "SELECT * FROM project_table WHERE username = ? AND project_id = ?",
         [username, projectId],
         (error, results) => {
           if (error) reject(error);
-          else resolve(results);
+          else resolve(results[0]);
         }
       );
     });
