@@ -1,9 +1,10 @@
-.project{
-    border-radius: 20px;
-    background: linear-gradient(to right, #ffffff8b, #ffffffd6);
-    color: rgb(0, 0, 0);
-    cursor: pointer;
+.project {
+  border-radius: 20px;
+  background: linear-gradient(to right, #ffffff8b, #ffffffd6);
+  color: rgb(0, 0, 0);
+  cursor: pointer;
+  padding: 30px 0px;
 }
-.project:hover{
-    background: linear-gradient(to right, #cfd8d7, #e6e6e6);
+.project:hover {
+  background: linear-gradient(to right, #cfd8d7, #e6e6e6);
 }

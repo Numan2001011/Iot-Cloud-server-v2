@@ -245,7 +245,7 @@ const ProjectDetails: React.FC = () => {
                 </Link>
               </li>
               <li className="nav-menu-item">
-                <a href="#apikey" className="nav-menu-link">
+                <a href="#apikey" className="nav-menu-link text-nowrap">
                   API KEYS
                 </a>
               </li>
