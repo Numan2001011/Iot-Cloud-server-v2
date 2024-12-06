@@ -151,11 +151,33 @@ const Profile = () => {
       }
     }
   };
+  const checkAuthentication = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/checkauth", {
+        withCredentials: true,
+      });
+      if (response.data.auth) {
+        console.log("Authentication verified:", response.data);
+      } else {
+        // alert("You are not authenticated. Redirecting to login.");
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Authentication check failed:", error);
+      // alert("Unable to verify authentication. Redirecting to login.");
+      navigate("/login");
+    }
+  };
 
   useEffect(() => {
-    getUserInfo();
-    fetchProjects();
-  }, []);
+    const initializeProfile = async () => {
+      await checkAuthentication();
+      await getUserInfo();
+      await fetchProjects();
+    };
+
+    initializeProfile();
+  }, [navigate]);
 
   const handleProjectClick = (project: { project_id: number }) => {
     alert("Entering into project");

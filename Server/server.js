@@ -130,6 +130,18 @@ const verifyJWT = (req, res, next) => {
   });
 };
 
+app.get("/checkauth", verifyJWT, (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ auth: false, message: "No active session." });
+  }
+
+  res.status(200).json({
+    auth: true,
+    message: "User is authenticated.",
+    user: req.session.user,
+  });
+});
+
 //when user will call the api, it will call the verifyJWT middleware first
 app.get("/getuser", verifyJWT, (req, res) => {
   if (!req.session.user) {
@@ -380,23 +392,41 @@ app.delete("/deleteproject/:project_id", verifyJWT, async (req, res) => {
       .json({ message: "User is not authorized to create a project." });
   }
   const project_id = req.params.project_id;
-  const deleteprojectQuery = "DELETE from project_table where project_id = ?";
-  const deleteProjectValue = [project_id];
+  const username = req.session.user.username;
+  const findprojectuser =
+    "SELECT username from project_table WHERE project_id = ?";
+
+  const deleteprojectQuery =
+    "DELETE from project_table where username = ? AND project_id = ?";
+
   try {
+    const projectuser = await new Promise((resolve, reject) => {
+      db.query(findprojectuser, [project_id], (error, results) => {
+        if (error) reject(error);
+        else resolve(results[0]);
+      });
+    });
+    if (!projectuser || projectuser.username !== username) {
+      return res.status(403).json({ message: "403 Forbidden: Access denied." });
+    }
     const result = await new Promise((resolve, reject) => {
-      db.query(deleteprojectQuery, deleteProjectValue, (error, data) => {
+      db.query(deleteprojectQuery, [username, project_id], (error, data) => {
         if (error) reject(error);
         else resolve(data);
       });
     });
     if (result.affectedRows > 0) {
-      res.status(200).json({ message: "Project successfully deleted." });
+      res
+        .status(200)
+        .json({ auth: true, message: "Project successfully deleted." });
     } else {
-      res.status(404).json({ message: "Project not found." });
+      res.status(404).json({ auth: false, message: "Project not found." });
     }
   } catch (error) {
     console.error("Project deleting error:", error);
-    res.status(500).json({ message: "Failed to delete the project." });
+    res
+      .status(500)
+      .json({ auth: false, message: "Failed to delete the project." });
   }
 });
 
@@ -451,6 +481,7 @@ app.delete("/removesensor/:sensor_id", verifyJWT, async (req, res) => {
       .json({ message: "User is not authorized to create a project." });
   }
   const sensor_id = req.params.sensor_id;
+
   const deleteSensorQuery = "DELETE FROM sensor_table WHERE sensor_id = ?";
   const sensorValues = [sensor_id];
   try {

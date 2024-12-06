@@ -7,7 +7,6 @@ import { useState } from "react";
 import "./Login.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./auth/AuthContext";
 
 // Define the schema for validation
 const loginSchema = z.object({
@@ -29,8 +28,6 @@ const Login = () => {
     resolver: zodResolver(loginSchema),
     mode: "onChange",
   });
-
-  const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [message, setMessage] = useState("");
@@ -60,7 +57,6 @@ const Login = () => {
         document.cookie = `token=${response.data.token}; path=/; ${
           window.location.protocol === "https:" ? "secure;" : ""
         }`;
-        login();
 
         alert("Login successful.");
         navigate("/profile");

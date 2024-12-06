@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import "./ProjectDetails.css";
@@ -111,10 +111,14 @@ const ProjectDetails: React.FC = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/addsensor", {
-        project_id: project?.project_id,
-        sensor_name: sensorName,
-      });
+      const response = await axios.post(
+        "http://localhost:5000/addsensor",
+        {
+          project_id: project?.project_id,
+          sensor_name: sensorName,
+        },
+        { withCredentials: true }
+      );
 
       if (response.status === 201) {
         alert(response.data.message || "Sensor added successfully.");
