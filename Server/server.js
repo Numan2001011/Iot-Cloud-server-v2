@@ -300,6 +300,7 @@ app.get("/showproject/:id", verifyJWT, async (req, res) => {
     return res.status(401).json({ message: "401 Unauthorized" });
   }
   const projectId = req.params.id;
+  console.log("pid:", typeof projectId);
   const username = req.session.user.username;
   const findprojectuser =
     "SELECT username from project_table WHERE project_id = ?";
@@ -391,7 +392,7 @@ app.delete("/deleteproject/:project_id", verifyJWT, async (req, res) => {
       .status(401)
       .json({ message: "User is not authorized to create a project." });
   }
-  const project_id = req.params.project_id;
+  const project_id = parseInt(req.params.project_id);
   const username = req.session.user.username;
   const findprojectuser =
     "SELECT username from project_table WHERE project_id = ?";
@@ -432,9 +433,7 @@ app.delete("/deleteproject/:project_id", verifyJWT, async (req, res) => {
 
 app.post("/addsensor", verifyJWT, async (req, res) => {
   if (!req.session.user) {
-    return res
-      .status(401)
-      .json({ message: "User is not authorized to create a project." });
+    return res.status(401).json({ message: "Unathorized to add sensor." });
   }
   const { project_id, sensor_name } = req.body;
 
@@ -476,29 +475,44 @@ app.post("/addsensor", verifyJWT, async (req, res) => {
 // DELETE request to remove a sensor
 app.delete("/removesensor/:sensor_id", verifyJWT, async (req, res) => {
   if (!req.session.user) {
-    return res
-      .status(401)
-      .json({ message: "User is not authorized to create a project." });
+    return res.status(401).json({ message: "401 Unauthorized." });
   }
-  const sensor_id = req.params.sensor_id;
+  const sensor_id = parseInt(req.params.sensor_id);
+  console.log("Sensorid:", typeof sensor_id);
+  const username = req.session.user.username;
 
-  const deleteSensorQuery = "DELETE FROM sensor_table WHERE sensor_id = ?";
-  const sensorValues = [sensor_id];
+  const findsensorUser =
+    "SELECT username FROM project_table WHERE project_id = ( SELECT project_id FROM sensor_table WHERE sensor_id = ?)";
+
+  const deleteSensorQuery = "DELETE from sensor_table WHERE sensor_id = ?";
   try {
+    const sensorUser = await new Promise((resolve, reject) => {
+      db.query(findsensorUser, [sensor_id], (error, results) => {
+        if (error) reject(error);
+        else resolve(results[0]);
+      });
+    });
+    console.log("Sensoruser: ", sensorUser);
+    if (!sensorUser || sensorUser.username !== username) {
+      return res.status(403).json({ message: "403 Forbidden: Access denied." });
+    }
+    //if valid user, delete sensor here
     const result = await new Promise((resolve, reject) => {
-      db.query(deleteSensorQuery, sensorValues, (error, data) => {
+      db.query(deleteSensorQuery, [sensor_id], (error, data) => {
         if (error) reject(error);
         else resolve(data);
       });
     });
     if (result.affectedRows > 0) {
-      res.status(200).send({ message: "Sensor removed successfully" });
+      res
+        .status(200)
+        .send({ auth: true, message: "Sensor removed successfully" });
     } else {
-      res.status(404).send({ message: "Sensor not found" });
+      res.status(403).send({ auth: false, message: "403 Forbidden" });
     }
   } catch (err) {
     console.error(err);
-    res.status(500).send({ message: "Failed to remove sensor" });
+    res.status(500).send({ auth: false, message: "Failed to remove sensor" });
   }
 });
 

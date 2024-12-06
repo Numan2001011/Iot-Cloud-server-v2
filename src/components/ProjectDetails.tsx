@@ -141,7 +141,9 @@ const ProjectDetails: React.FC = () => {
     if (!deletesensor) return;
 
     try {
-      await axios.delete(`http://localhost:5000/removesensor/${sensorId}`);
+      await axios.delete(`http://localhost:5000/removesensor/${sensorId}`, {
+        withCredentials: true,
+      });
       setSensors((prevSensors) =>
         prevSensors.filter((sensor) => sensor.sensor_id !== sensorId)
       );
