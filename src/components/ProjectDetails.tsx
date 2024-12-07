@@ -21,6 +21,7 @@ const ProjectDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [sensors, setSensors] = useState<Sensor[]>([]);
+  
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -165,14 +166,20 @@ const ProjectDetails: React.FC = () => {
     if (!windowresult) return;
     else {
       try {
-        const response = await axios.post("http://localhost:5000/initproject", {
-          project_id: project?.project_id,
-        });
+        const response = await axios.post(
+          "http://localhost:5000/initproject",
+          {
+            project_id: project?.project_id,
+          },
+          {
+            withCredentials: true,
+          }
+        );
         if (response.status === 200) {
           console.log("init res:", response.data.espUrl);
           setEsp_url(response.data.espUrl);
 
-          setButtonInvalid(true);
+          // setButtonInvalid(true);
         }
       } catch (error) {
         console.error("Error initializing project:", error);
@@ -363,7 +370,7 @@ const ProjectDetails: React.FC = () => {
           to send data to the IoT Cloud Server.{" "}
           <span className="text-danger">
             <i>
-              After adding or deleting any sensor, you must click the button or
+              After adding or deleting any sensor, you must click the button and
               refresh the page to get updated URL
             </i>
           </span>
@@ -393,14 +400,14 @@ const ProjectDetails: React.FC = () => {
         </p>
         <p>To use this, you need to go through some changes:</p>
         <ul>
-          <li>Copy the whole URL and paste it into your ESP32 code.</li>
+          <li>1. Copy the whole URL and paste it into your ESP32 code.</li>
           <li>
-            When sending data, replace the{" "}
+            2. When sending data, replace the{" "}
             <strong>Sensor_name_value_field</strong> with actual sensor
             value(numerical sensor data)
           </li>
           <li>
-            Use delay 15 seconds so that the data is properly handled by the
+            3. Use delay 15 seconds so that the data is properly handled by the
             cloud server.
           </li>
         </ul>

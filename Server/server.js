@@ -263,7 +263,7 @@ app.post("/createproject", verifyJWT, async (req, res) => {
 
 //project get method
 app.get("/getprojects", verifyJWT, async (req, res) => {
-  console.log("Getting projects for user:", req.session.user.username);
+  // console.log("Getting projects for user:", req.session.user.username);
   if (!req.session.user) {
     return res
       .status(401)
@@ -293,7 +293,7 @@ app.get("/getprojects", verifyJWT, async (req, res) => {
   }
 });
 
-const baseUrl = "http://192.168.1.108:5000/sendespdata/"; //change this when changing the network
+const baseUrl = " http://192.168.1.114:5000/sendespdata/"; //change this when changing the network
 
 app.get("/showproject/:id", verifyJWT, async (req, res) => {
   if (!req.session.user) {
@@ -516,13 +516,9 @@ app.delete("/removesensor/:sensor_id", verifyJWT, async (req, res) => {
   }
 });
 
-// const baseUrl = "http://192.168.1.108:5000/"; //change this when changing the network
-
 app.post("/initproject", verifyJWT, async (req, res) => {
   if (!req.session.user) {
-    return res
-      .status(401)
-      .json({ message: "User is not authorized to create a project." });
+    return res.status(401).json({ message: "401 Unauthorized." });
   }
   const { project_id } = req.body;
 
@@ -563,17 +559,22 @@ app.post("/initproject", verifyJWT, async (req, res) => {
           )
           .join("&&");
 
-      res.status(200).json({ espUrl });
+      res.status(200).json({ auth: true, espUrl });
     } else if (get_sensor_key.length == 0) {
-      res.status(200).json({ espUrl: "No sensor found in the project." });
-    } else {
       res
-        .status(404)
-        .json({ message: "Project not found or no sensors available" });
+        .status(200)
+        .json({ auth: true, espUrl: "No sensor found in the project." });
+    } else {
+      res.status(404).json({
+        auth: true,
+        message: "Project not found or no sensors available",
+      });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Failed to initialize project" });
+    res
+      .status(500)
+      .json({ auth: false, message: "Failed to initialize project" });
   }
 });
 

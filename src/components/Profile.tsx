@@ -41,11 +41,29 @@ const Profile = () => {
       console.error("Error fetching user data:", error);
     }
   };
-  const goToHome = () => {
-    const result = window.confirm("Are you sure you want to leave?");
-    if (!result) return;
+  // const goToHome = () => {
+  //   const result = window.confirm("Are you sure you want to leave?");
+  //   if (!result) return;
+  //   else {
+  //     navigate("/");
+  //   }
+  // };
+
+  const goToHome = async () => {
+    const res = window.confirm("Are you sure you want to leave?");
+    if (!res) return;
     else {
-      navigate("/");
+      try {
+        const response = await axios.get("http://localhost:5000/logout", {
+          withCredentials: true,
+        });
+
+        if (response.status === 200) {
+          navigate("/");
+        }
+      } catch (error) {
+        console.error("Error going home:", error);
+      }
     }
   };
 
@@ -314,5 +332,4 @@ const Profile = () => {
     </>
   );
 };
-
 export default Profile;

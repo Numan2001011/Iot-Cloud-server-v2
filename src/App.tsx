@@ -6,6 +6,7 @@ import Login from "./components/Login";
 import Profile from "./components/Profile";
 import ProjectDetails from "./components/ProjectDetails";
 import Home from "./components/Home";
+import Documentation from "./components/Documentation";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           <Route path="/registration" element={<Registration />} />
           <Route path="/test" element={<Test />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/documentation" element={<Documentation />} />
           {/*Protected Routes */}
           <Route path="/test" element={<Test />} />
           <Route path="/profile" element={<Profile />} />
