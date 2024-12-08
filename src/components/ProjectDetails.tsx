@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import "./ProjectDetails.css";
 import { Button, Form, Modal } from "react-bootstrap";
+import SensorGraph from "./SensorGraph";
 
 interface Project {
   project_id: number;
@@ -21,7 +22,7 @@ const ProjectDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [sensors, setSensors] = useState<Sensor[]>([]);
-  
+
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,6 +30,7 @@ const ProjectDetails: React.FC = () => {
   const [sensorName, setSensorName] = useState<string>("");
   const [modalError, setModalError] = useState<string | null>(null);
 
+  console.log("Sensors:", sensors);
   const [esp_url, setEsp_url] = useState<string>(
     "Initialize your project first."
   );
@@ -153,6 +155,9 @@ const ProjectDetails: React.FC = () => {
     }
   };
 
+  const goToDocumentation = () => {
+    navigate("/documentation");
+  };
   const [togglebar, setTogglebar] = useState(false);
   const ShowHeader = () => {
     setTogglebar(!togglebar);
@@ -263,6 +268,11 @@ const ProjectDetails: React.FC = () => {
                 </a>
               </li>
               <li className="nav-menu-item">
+                <a href="#dashboard" className="nav-menu-link">
+                  Dashboard
+                </a>
+              </li>
+              <li className="nav-menu-item">
                 <Link to="/documentation" className="nav-menu-link">
                   Documentation
                 </Link>
@@ -291,7 +301,6 @@ const ProjectDetails: React.FC = () => {
         <h2 className="text-center text-fuild project-name">
           {project.project_name}
         </h2>
-        {/* <p className="text-center">Project ID: {project.project_id}</p> */}
       </div>
       <div className="d-flex justify-content-center mt-3">
         <button onClick={handleDeleteProject} className="btn btn-danger">
@@ -308,137 +317,6 @@ const ProjectDetails: React.FC = () => {
           Add Sensor
         </button>
       </div>
-
-      {/* List of Sensors */}
-      <div className="sensor-div d-flex flex-column container">
-        <h3 className="text-center mt-4">Sensors</h3>
-        {sensors.length > 0 ? (
-          <ul className="">
-            {sensors.map((sensor) => (
-              <div
-                className="col-12 d-flex justify-content-around align-items-center"
-                key={sensor.sensor_id}
-              >
-                {/* Sensor Name and Key */}
-                <div className="col-md-8 col-sm-9 d-flex align-items-center sensor-list my-1">
-                  <li className="">
-                    <strong>{sensor.sensor_name}:</strong> {sensor.sensor_key}
-                  </li>
-                </div>
-                <div className="col-md-4 col-sm-3 d-flex justify-content-center">
-                  <button
-                    className="btn remove-btn"
-                    onClick={() => handleRemoveSensor(sensor.sensor_id)}
-                    disabled={buttonInvalid}
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
-          </ul>
-        ) : (
-          <p>No sensors added yet.</p>
-        )}
-      </div>
-
-      {/* {!buttonInvalid && (
-        <>
-          <div className="init-btn-div d-flex flex-column  align-items-center container mb-4">
-            <h4 className="h4 text-success text-center">NOTE</h4>
-            <p>
-              After finalizing your sensors, you have to click{" "}
-              <strong>VIEW WRITE URL</strong> to get the ESP URL Link. Use this
-              link to send data to the IoT Cloud Server.{" "}
-            </p>
-            <p>Click below to generate Write URL for your project.</p>
-
-            <button onClick={handleInitializeProject} className="btn init-btn">
-              VIEW WRITE URL
-            </button>
-          </div>
-        </>
-      )} */}
-
-      <hr style={{ border: "1px solid black", margin: "10px 0" }} />
-
-      <div className="init-btn-div d-flex flex-column  align-items-center container mb-4">
-        <h4 className="h4 text-success text-center">NOTE</h4>
-        <p>
-          After finalizing your sensors, you have to click{" "}
-          <strong>VIEW WRITE URL</strong> to get the ESP URL Link. Use this link
-          to send data to the IoT Cloud Server.{" "}
-          <span className="text-danger">
-            <i>
-              After adding or deleting any sensor, you must click the button and
-              refresh the page to get updated URL
-            </i>
-          </span>
-        </p>
-        <p>Click below to generate Write URL for your project.</p>
-
-        <button onClick={handleInitializeProject} className="btn init-btn">
-          VIEW WRITE URL
-        </button>
-
-        <p className="mt-3">
-          <strong>ESP_WRITE_URL: </strong>
-          <span className="text-success">
-            <i>{esp_url}</i>
-          </span>
-        </p>
-      </div>
-
-      <div className=" border rounded p-3" id="apikey">
-        <h3 className="h3 text-center">Follow the Instructions:</h3>
-        <p>Use this ESP_URL to send data to the IOT Cloud Server.</p>
-        <p>
-          <strong>ESP_WRITE_URL: </strong>
-          <span className="text-success">
-            <i>{esp_url}</i>
-          </span>
-        </p>
-        <p>To use this, you need to go through some changes:</p>
-        <ul>
-          <li>1. Copy the whole URL and paste it into your ESP32 code.</li>
-          <li>
-            2. When sending data, replace the{" "}
-            <strong>Sensor_name_value_field</strong> with actual sensor
-            value(numerical sensor data)
-          </li>
-          <li>
-            3. Use delay 15 seconds so that the data is properly handled by the
-            cloud server.
-          </li>
-        </ul>
-      </div>
-
-      {/* {buttonInvalid && (
-        <div className=" border rounded p-3">
-          <h3 className="h3 text-center">Follow the Instructions:</h3>
-          <p>Use this ESP_URL to send data to the IOT Cloud Server.</p>
-          <p>
-            <strong>ESP_URL: </strong>
-            <span className="text-success">
-              <i>{esp_url}</i>
-            </span>
-          </p>
-          <p>To use this, you need to go through some changes:</p>
-          <ul>
-            <li>Copy the whole URL and paste it into your ESP32 code.</li>
-            <li>
-              When sending data, replace the{" "}
-              <strong>Sensor_name_value_field</strong> with actual sensor
-              value(numerical sensor data)
-            </li>
-            <li>
-              Use delay 15 seconds so that the data is properly handled by the
-              cloud server.
-            </li>
-          </ul>
-        </div>
-      )} */}
-
       {/* Modal for Adding Sensor */}
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
@@ -470,6 +348,98 @@ const ProjectDetails: React.FC = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <div className="sensor-div d-flex flex-column container">
+        <h3 className="text-center mt-4">Sensors</h3>
+        {sensors.length > 0 ? (
+          <ul className="">
+            {sensors.map((sensor) => (
+              <div
+                className="col-12 d-flex justify-content-around align-items-center"
+                key={sensor.sensor_id}
+              >
+                <div className="col-md-8 col-sm-9 d-flex align-items-center sensor-list my-1">
+                  <li className="">
+                    <strong>{sensor.sensor_name}:</strong> {sensor.sensor_key}
+                  </li>
+                </div>
+                <div className="col-md-4 col-sm-3 d-flex justify-content-center">
+                  <button
+                    className="btn remove-btn"
+                    onClick={() => handleRemoveSensor(sensor.sensor_id)}
+                    disabled={buttonInvalid}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+          </ul>
+        ) : (
+          <p>No sensors added yet.</p>
+        )}
+      </div>
+      <hr style={{ border: "1px solid black", margin: "10px 0" }} />
+      <div className="init-btn-div d-flex flex-column  align-items-center container mb-4">
+        <h4 className="h4 text-success text-center">NOTE</h4>
+        <p>
+          After finalizing your sensors, you have to click{" "}
+          <strong>VIEW WRITE URL</strong> to get the ESP URL Link. Use this link
+          to send data to the IoT Cloud Server.{" "}
+          <span className="text-danger">
+            <i>
+              After adding or deleting any sensor, you must click the button and
+              refresh the page to get updated URL
+            </i>
+          </span>
+        </p>
+        <p>Click below to generate Write URL for your project.</p>
+
+        <button onClick={handleInitializeProject} className="btn init-btn">
+          VIEW WRITE URL
+        </button>
+
+        <p className="mt-3 fw-bold">ESP_WRITE_URL</p>
+        <div className="d-flex flex-column align-items-center container">
+          <p className="url-div">
+            <span className="">
+              <i>{esp_url}</i>{" "}
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <div className=" border rounded p-3" id="apikey">
+        <h3 className="h3 text-center">Follow the Instructions:</h3>
+        <p>Use this ESP_URL to send data to the IOT Cloud Server.</p>
+        <p className="fw-bold">ESP_WRITE_URL</p>
+        <div className="d-flex flex-column align-items-center">
+          <p className="url-div">
+            <span className="">
+              <i>{esp_url}</i>{" "}
+            </span>
+          </p>
+        </div>
+
+        <p className="text-center border rounded-2 fw-bold fs-5">
+          Go to{" "}
+          <span
+            onClick={goToDocumentation}
+            className="text-primary cursor-pointer"
+          >
+            Documentation
+          </span>{" "}
+          page to know how you can use this URL.
+        </p>
+      </div>
+      <hr style={{ border: "1px solid black", margin: "10px 0" }} />
+      <div id="dashboard">
+        <p className="dashboard-name text-center mb-3">Dashboard</p>
+        <div className="d-flex justify-content-center align-items-center flex-column">
+          <h3 className="h3">Project Sensor Graphs</h3>
+          <SensorGraph projectId={project?.project_id} />
+        </div>
+      </div>
     </>
   );
 };

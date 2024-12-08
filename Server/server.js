@@ -293,7 +293,7 @@ app.get("/getprojects", verifyJWT, async (req, res) => {
   }
 });
 
-const baseUrl = " http://192.168.1.114:5000/sendespdata/"; //change this when changing the network
+const baseUrl = " http://192.168.1.104:5000/sendespdata/"; //change this when changing the network
 
 app.get("/showproject/:id", verifyJWT, async (req, res) => {
   if (!req.session.user) {
@@ -622,6 +622,56 @@ app.get("/sendespdata/:datastring", async (req, res) => {
   } catch (error) {
     console.error("Error saving data:", error);
     res.status(500).json({ message: "Failed to save sensor data" });
+  }
+});
+
+app.get("/sensordata/:project_id", verifyJWT, async (req, res) => {
+  if (!req.session.user) {
+    return res
+      .status(401)
+      .json({ message: "User is not authorized to create a project." });
+  }
+  const project_id = parseInt(req.params.project_id);
+
+  if (!project_id) {
+    return res.status(400).json({ error: "Project_id is required" });
+  }
+
+  const username = req.session.user.username;
+  const findprojectuser =
+    "SELECT username from project_table WHERE project_id = ?";
+
+  const fetchSensorDataSql =
+    "WITH RankedData AS ( SELECT project_table.project_id, sensor_table.sensor_id, sensor_table.sensor_name, sensordata_table.sensor_value, sensordata_table.arrival_time, ROW_NUMBER() OVER (PARTITION BY sensor_table.sensor_id ORDER BY sensordata_table.arrival_time ASC) AS rn FROM project_table INNER JOIN sensor_table ON sensor_table.project_id = project_table.project_id INNER JOIN sensordata_table ON sensor_table.sensor_id = sensordata_table.sensor_id WHERE project_table.project_id = ?) SELECT project_id, sensor_id, sensor_name, sensor_value, arrival_time FROM RankedData WHERE rn <= 10 ORDER BY sensor_id, arrival_time ASC";
+  try {
+    const projectuser = await new Promise((resolve, reject) => {
+      db.query(findprojectuser, [project_id], (error, results) => {
+        if (error) reject(error);
+        else resolve(results[0]);
+      });
+    });
+    if (!projectuser || projectuser.username !== username) {
+      return res.status(403).json({ message: "403 Forbidden: Access denied." });
+    }
+
+    const sensorData = await new Promise((resolve, reject) => {
+      db.query(fetchSensorDataSql, [project_id], (error, results) => {
+        if (error) reject(error);
+        else resolve(results);
+      });
+    });
+    console.log("SensorData:", sensorData);
+
+    if (sensorData.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "No data found for this sensor_id" });
+    }
+
+    res.status(200).json(sensorData);
+  } catch (error) {
+    console.error("Error fetching sensor data:", error);
+    res.status(500).json({ error: "Error fetching sensor data." });
   }
 });
 

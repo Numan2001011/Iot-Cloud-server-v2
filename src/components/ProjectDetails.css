@@ -37,3 +37,22 @@
   background-color: aqua;
   transform: scale(1.2);
 }
+.cursor-pointer {
+  cursor: pointer;
+}
+.dashboard-name {
+  background-color: #003cab;
+  color: white;
+  padding: 10px;
+  font-size: 1.2rem;
+}
+
+.url-div {
+  width: 100%;
+  text-wrap: nowrap;
+  overflow-x: scroll;
+  padding: 10px 10px;
+  background-color: #000;
+  color: #93f8ff;
+  margin-bottom: 0;
+}
