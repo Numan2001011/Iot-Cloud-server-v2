@@ -28,6 +28,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:3000",
+      "http://192.168.43.165:3000",
       "http://localhost/phpmyadmin/index.php/",
     ],
     credentials: true, // Allow sending credentials with requestss
@@ -293,7 +294,7 @@ app.get("/getprojects", verifyJWT, async (req, res) => {
   }
 });
 
-const baseUrl = " http://192.168.1.104:5000/sendespdata/"; //change this when changing the network
+const baseUrl = " http://192.168.43.165:5000/sendespdata/"; //change this when changing the network
 
 app.get("/showproject/:id", verifyJWT, async (req, res) => {
   if (!req.session.user) {

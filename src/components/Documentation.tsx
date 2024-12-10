@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "./Home.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 const Documentation = () => {
   const [togglebar, setTogglebar] = useState(false);
   const ShowHeader = () => {
@@ -39,7 +40,7 @@ const Documentation = () => {
       <header className="header">
         <nav className="h-nav">
           <div className="h-nav-div">
-            <h2 className="h-nav-div-h2">LabAssist</h2>
+            <h2 className="h-nav-div-h2">SkySync IoT</h2>
           </div>
           <div
             className={togglebar ? "nav-menu show" : "nav-menu"}
@@ -58,6 +59,7 @@ const Documentation = () => {
                   Home
                 </a>
               </li>
+
               <li className="nav-menu-item">
                 <a href="#contact" className="nav-menu-link">
                   Contact
@@ -86,7 +88,7 @@ const Documentation = () => {
 
       <div className="container fs-5" style={containerStyle}>
         <h1 style={mainHeader} className="text-center">
-          LabAssist: Lab Management System
+          SkySync IoT: A Cloud-based IoT Platform
         </h1>
         <br />
         <h3>Table of Contents:</h3>
@@ -200,7 +202,7 @@ const Documentation = () => {
               <span className="fw-bold">Node.js:</span> v14.x or later
             </li>
             <li>
-              <span className="fw-bold">MongoDB:</span> v4.x or later
+              <span className="fw-bold">MySql:</span> v4.x or later
             </li>
             <li>
               <span className="fw-bold">React:</span> v17.x or later
