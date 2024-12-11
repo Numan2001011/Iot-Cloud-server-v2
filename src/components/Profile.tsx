@@ -7,6 +7,7 @@ import { z } from "zod";
 import axios from "axios";
 import Project from "./Projectlist";
 import { Link, useNavigate } from "react-router-dom";
+import URL from "../URL";
 
 interface Userinfo {
   name: string;
@@ -19,6 +20,7 @@ const schema = z.object({
 });
 
 const Profile = () => {
+  const ip = URL();
   const [togglebar, setTogglebar] = useState(false);
   const ShowHeader = () => {
     setTogglebar(!togglebar);
@@ -33,7 +35,7 @@ const Profile = () => {
 
   const getUserInfo = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/getuser", {
+      const response = await axios.get(`${ip}/getuser`, {
         withCredentials: true,
       });
       setuserinfo(response.data);
@@ -54,7 +56,7 @@ const Profile = () => {
     if (!res) return;
     else {
       try {
-        const response = await axios.get("http://localhost:5000/logout", {
+        const response = await axios.get(`${ip}/logout`, {
           withCredentials: true,
         });
 
@@ -84,11 +86,9 @@ const Profile = () => {
 
   const submitProject = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:5000/createproject",
-        formData,
-        { withCredentials: true }
-      );
+      const response = await axios.post(`${ip}/createproject`, formData, {
+        withCredentials: true,
+      });
 
       if (response.status === 201) {
         alert(response.data.message || "Project created successfully.");
@@ -137,7 +137,7 @@ const Profile = () => {
   // Fetch projects from the server
   const fetchProjects = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/getprojects", {
+      const response = await axios.get(`${ip}/getprojects`, {
         withCredentials: true,
       });
       console.log("response code: ", response.status);
@@ -157,7 +157,7 @@ const Profile = () => {
     if (!res) return;
     else {
       try {
-        const response = await axios.get("http://localhost:5000/logout", {
+        const response = await axios.get(`${ip}/logout`, {
           withCredentials: true,
         });
 
@@ -171,7 +171,7 @@ const Profile = () => {
   };
   const checkAuthentication = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/checkauth", {
+      const response = await axios.get(`${ip}/checkauth`, {
         withCredentials: true,
       });
       if (response.data.auth) {

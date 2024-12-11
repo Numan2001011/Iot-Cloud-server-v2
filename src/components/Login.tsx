@@ -7,6 +7,7 @@ import { useState } from "react";
 import "./Login.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import URL from "../URL";
 
 // Define the schema for validation
 const loginSchema = z.object({
@@ -20,6 +21,7 @@ const loginSchema = z.object({
 type loginData = z.infer<typeof loginSchema>;
 
 const Login = () => {
+  const ip = URL();
   const {
     register,
     handleSubmit,
@@ -45,7 +47,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/loginuser",
+        `${ip}/loginuser`,
         data,
         {
           withCredentials: true,

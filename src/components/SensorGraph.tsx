@@ -1,6 +1,7 @@
 // SensorGraph.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import URL from "../URL";
 import {
   AreaChart,
   Area,
@@ -22,18 +23,16 @@ interface SensorGraphProps {
 }
 
 const SensorGraph: React.FC<SensorGraphProps> = ({ projectId }) => {
+  const ip = URL();
   const [sensorData, setSensorData] = useState<SensorData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSensorData = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/sensordata/${projectId}`,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.get(`${ip}/sensordata/${projectId}`, {
+        withCredentials: true,
+      });
       setSensorData(response.data);
       setLoading(false);
     } catch (err: any) {

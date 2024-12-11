@@ -8,26 +8,26 @@ const Documentation = () => {
     setTogglebar(!togglebar);
   };
 
-  const containerStyle = {
+  const containerStyle: any = {
     backgroundColor: "#f8f9fa",
     padding: "20px",
     borderRadius: "10px",
   };
 
-  const mainHeader = {
+  const mainHeader: any = {
     backgroundColor: "#4682b4",
     color: "white",
     padding: "10px",
     borderRadius: "5px",
   };
-  const headerStyle = {
+  const headerStyle: any = {
     backgroundColor: "#343a40",
     color: "#ffffff",
     padding: "10px",
     borderRadius: "5px",
   };
 
-  const contentStyle = {
+  const contentStyle: any = {
     backgroundColor: "#ffffff",
     padding: "10px",
     borderRadius: "5px",

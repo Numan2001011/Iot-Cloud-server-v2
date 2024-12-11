@@ -8,6 +8,7 @@ import { useState } from "react";
 import axios, { AxiosError } from "axios";
 import { DiVim } from "react-icons/di";
 import { useNavigate } from "react-router-dom";
+import URL from "../URL";
 
 const stringValidationRules = {
   regex: /^[A-Za-z.]+(?: [A-Za-z.]+)*$/,
@@ -57,6 +58,7 @@ type regData = z.infer<typeof regSchema>;
 type otpData = z.infer<typeof otpSchema>;
 
 const Registration = () => {
+  const ip = URL();
   const {
     register,
     handleSubmit,
@@ -89,7 +91,7 @@ const Registration = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/signup/registerusers",
+        `${ip}/signup/registerusers`,
         data
       );
 

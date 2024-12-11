@@ -4,6 +4,7 @@ import axios from "axios";
 import "./ProjectDetails.css";
 import { Button, Form, Modal } from "react-bootstrap";
 import SensorGraph from "./SensorGraph";
+import URL from "../URL";
 
 interface Project {
   project_id: number;
@@ -19,6 +20,7 @@ interface Sensor {
 }
 
 const ProjectDetails: React.FC = () => {
+  const ip = URL();
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<Project | null>(null);
   const [sensors, setSensors] = useState<Sensor[]>([]);
@@ -37,12 +39,9 @@ const ProjectDetails: React.FC = () => {
 
   const fetchProject = async () => {
     try {
-      const response = await axios.get(
-        `http://localhost:5000/showproject/${id}`,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.get(`${ip}/showproject/${id}`, {
+        withCredentials: true,
+      });
       if (response.data.espUrl) {
         setEsp_url(response.data.espUrl);
       }
@@ -91,7 +90,7 @@ const ProjectDetails: React.FC = () => {
     if (!deleteproject) return;
 
     try {
-      await axios.delete(`http://localhost:5000/deleteproject/${id}`, {
+      await axios.delete(`${ip}/deleteproject/${id}`, {
         withCredentials: true,
       });
       navigate("/profile");
@@ -115,7 +114,7 @@ const ProjectDetails: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/addsensor",
+        "${ip}/addsensor",
         {
           project_id: project?.project_id,
           sensor_name: sensorName,
@@ -144,7 +143,7 @@ const ProjectDetails: React.FC = () => {
     if (!deletesensor) return;
 
     try {
-      await axios.delete(`http://localhost:5000/removesensor/${sensorId}`, {
+      await axios.delete(`${ip}/removesensor/${sensorId}`, {
         withCredentials: true,
       });
       setSensors((prevSensors) =>
@@ -172,7 +171,7 @@ const ProjectDetails: React.FC = () => {
     else {
       try {
         const response = await axios.post(
-          "http://localhost:5000/initproject",
+          "${ip}/initproject",
           {
             project_id: project?.project_id,
           },
@@ -196,7 +195,7 @@ const ProjectDetails: React.FC = () => {
     if (!res) return;
     else {
       try {
-        const response = await axios.get("http://localhost:5000/logout", {
+        const response = await axios.get("${ip}/logout", {
           withCredentials: true,
         });
 

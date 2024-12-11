@@ -25,12 +25,15 @@ app.use(
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "http://192.168.43.165:3000",
-      "http://localhost/phpmyadmin/index.php/",
-    ],
+    origin: true,
+    // origin: [
+    //   "http://localhost:5173",
+    //   "http://localhost:3000",
+    //   "http://192.168.43.165:3000",
+    //   "http://localhost/phpmyadmin/index.php/",
+    //   "http://192.168.1.100:5173",
+    //   "*",
+    // ],
     credentials: true, // Allow sending credentials with requestss
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -689,7 +692,7 @@ app.get("/logout", verifyJWT, (req, res) => {
 app.get("/", (req, res) => {
   return res.json({ msg: "Hello world" });
 });
-
-app.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
+const host = "0.0.0.0";
+app.listen(PORT, host, () => {
+  console.log(`Server is listening on port ${PORT} and host ${host}`);
 });
