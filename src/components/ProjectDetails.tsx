@@ -114,7 +114,7 @@ const ProjectDetails: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "${ip}/addsensor",
+        `${ip}/addsensor`,
         {
           project_id: project?.project_id,
           sensor_name: sensorName,
@@ -171,7 +171,7 @@ const ProjectDetails: React.FC = () => {
     else {
       try {
         const response = await axios.post(
-          "${ip}/initproject",
+          `${ip}/initproject`,
           {
             project_id: project?.project_id,
           },

@@ -60,7 +60,7 @@ const SensorGraph: React.FC<SensorGraphProps> = ({ projectId }) => {
 
     const intervalId = setInterval(() => {
       fetchSensorData(); // Fetch data every 5 seconds
-    }, 1000);
+    }, 5000);
 
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, [projectId]);
@@ -98,7 +98,9 @@ const SensorGraph: React.FC<SensorGraphProps> = ({ projectId }) => {
             <Area
               type="monotone"
               dataKey="value"
-              stroke={colors[index % colors.length]}
+              // stroke={colors[index % colors.length]}
+              stroke="black"
+              strokeWidth={2} // Border thickness
               fill={colors[index % colors.length]}
               dot={{ stroke: "#000", strokeWidth: 2, fill: "#fff" }}
             />
