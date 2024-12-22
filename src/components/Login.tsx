@@ -46,19 +46,16 @@ const Login = () => {
     console.log("Form submitted successfully:", data);
 
     try {
-      const response = await axios.post(
-        `${ip}/loginuser`,
-        data,
-        {
-          withCredentials: true,
-        }
-      );
+      const response = await axios.post(`${ip}/loginuser`, data, {
+        withCredentials: true,
+      });
 
       if (response.status == 200 && response.data.token) {
         // Set cookie without HttpOnly if you want to access it via JavaScript
         document.cookie = `token=${response.data.token}; path=/; ${
           window.location.protocol === "https:" ? "secure;" : ""
         }`;
+        console.log("JWT: ", response.data.token);
 
         alert("Login successful.");
         navigate("/profile");

@@ -37,6 +37,24 @@ const ProjectDetails: React.FC = () => {
     "Initialize your project first."
   );
 
+  const checkAuthentication = async () => {
+    try {
+      const response = await axios.get(`${ip}/checkauth`, {
+        withCredentials: true,
+      });
+      if (response.data.auth) {
+        console.log("Authentication verified:", response.data);
+      } else {
+        // alert("You are not authenticated. Redirecting to login.");
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Authentication check failed:", error);
+      // alert("Unable to verify authentication. Redirecting to login.");
+      navigate("/login");
+    }
+  };
+
   const fetchProject = async () => {
     try {
       const response = await axios.get(`${ip}/showproject/${id}`, {
@@ -209,6 +227,7 @@ const ProjectDetails: React.FC = () => {
   };
 
   useEffect(() => {
+    checkAuthentication();
     if (id) {
       fetchProject();
     }
